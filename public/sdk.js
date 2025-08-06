@@ -72,105 +72,14 @@
     }
   }
 
-  // Create and register inline Service Worker
+  // Register Service Worker (must be a physical file on client domain)
   async function registerServiceWorker() {
     try {
-      console.log('🔧 PushSaaS: Creating inline Service Worker...');
+      console.log('🔧 PushSaaS: Registering Service Worker...');
       
-      // Create Service Worker code as a blob
-      const swCode = `
-        // PushSaaS Service Worker (Inline)
-        const SW_VERSION = '2.0.0';
-        
-        self.addEventListener('install', (event) => {
-          console.log('🔧 PushSaaS SW: Installing version', SW_VERSION);
-          self.skipWaiting();
-        });
-        
-        self.addEventListener('activate', (event) => {
-          console.log('✅ PushSaaS SW: Activated version', SW_VERSION);
-          event.waitUntil(self.clients.claim());
-        });
-        
-        self.addEventListener('push', (event) => {
-          console.log('📨 PushSaaS SW: Push received');
-          
-          let notificationData = {
-            title: 'Nueva notificación',
-            body: 'Tienes una nueva notificación',
-            icon: '/favicon.ico',
-            badge: '/favicon.ico',
-            tag: 'pushsaas-notification',
-            requireInteraction: false,
-            data: {
-              url: self.location.origin,
-              timestamp: Date.now()
-            }
-          };
-          
-          if (event.data) {
-            try {
-              const pushData = event.data.json();
-              notificationData = { ...notificationData, ...pushData };
-            } catch (error) {
-              console.error('❌ PushSaaS SW: Failed to parse push data:', error);
-              notificationData.body = event.data.text() || notificationData.body;
-            }
-          }
-          
-          const promiseChain = self.registration.showNotification(
-            notificationData.title,
-            {
-              body: notificationData.body,
-              icon: notificationData.icon,
-              badge: notificationData.badge,
-              tag: notificationData.tag,
-              requireInteraction: notificationData.requireInteraction,
-              data: notificationData.data,
-              vibrate: [200, 100, 200],
-              timestamp: notificationData.data.timestamp
-            }
-          );
-          
-          event.waitUntil(promiseChain);
-        });
-        
-        self.addEventListener('notificationclick', (event) => {
-          console.log('👆 PushSaaS SW: Notification clicked');
-          
-          const notification = event.notification;
-          const data = notification.data || {};
-          
-          notification.close();
-          
-          const urlToOpen = data.url || self.location.origin;
-          
-          const promiseChain = clients.matchAll({
-            type: 'window',
-            includeUncontrolled: true
-          }).then((clientList) => {
-            for (let i = 0; i < clientList.length; i++) {
-              const client = clientList[i];
-              if (client.url === urlToOpen && 'focus' in client) {
-                return client.focus();
-              }
-            }
-            if (clients.openWindow) {
-              return clients.openWindow(urlToOpen);
-            }
-          });
-          
-          event.waitUntil(promiseChain);
-        });
-        
-        console.log('🚀 PushSaaS SW: Loaded version', SW_VERSION);
-      `;
-      
-      // Create blob URL for the service worker
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      
-      console.log('📡 PushSaaS: Registering inline Service Worker...');
+      // Service Worker must be a physical file on the same domain
+      const swUrl = `/service-worker.js?site=${siteId}`;
+      console.log('📡 PushSaaS: Service Worker URL:', swUrl);
       
       const registration = await navigator.serviceWorker.register(swUrl, {
         scope: '/'
@@ -179,16 +88,18 @@
       serviceWorkerRegistration = registration;
       console.log('👷 PushSaaS: Service Worker registered successfully');
       
-      // Clean up blob URL
-      URL.revokeObjectURL(swUrl);
-      
       // Wait for service worker to be ready
       await navigator.serviceWorker.ready;
       console.log('✅ PushSaaS: Service Worker ready');
       
     } catch (error) {
       console.error('❌ PushSaaS: Service Worker registration failed:', error);
-      throw error;
+      console.log('⚠️ PushSaaS: Make sure service-worker.js exists in your domain root');
+      console.log('📝 PushSaaS: Download from: ${apiBase}/service-worker.js');
+      
+      // Fallback: try to work without service worker (limited functionality)
+      console.log('⚠️ PushSaaS: Continuing without Service Worker (limited functionality)');
+      serviceWorkerRegistration = null;
     }
   }
 
