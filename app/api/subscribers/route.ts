@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check plan limits
-    const userPlan = site.users?.plan || 'free'
+    const userPlan = (site.users as any)?.[0]?.plan || 'free'
     const maxSubscribers = userPlan === 'paid' ? 10000 : 500
 
     if (site.subscriber_count >= maxSubscribers) {
