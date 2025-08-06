@@ -23,15 +23,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
     }
 
-    // Get user from database to check plan limits
-    const { data: dbUser, error: userError } = await supabaseAdmin
+    // Get or create user in database
+    let dbUser
+    const { data: existingUser, error: userError } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('clerk_id', user.id)
       .single()
 
-    if (userError || !dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    if (existingUser) {
+      dbUser = existingUser
+    } else {
+      // Create user if doesn't exist
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          clerk_id: user.id,
+          email: user.emailAddresses[0]?.emailAddress || '',
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'
+        })
+        .select()
+        .single()
+      
+      if (createError) {
+        console.error('Error creating user:', createError)
+        return NextResponse.json({ error: 'Error creating user' }, { status: 500 })
+      }
+      dbUser = newUser
     }
 
     // Check if user already has a site with this URL
@@ -112,15 +130,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user from database
-    const { data: dbUser, error: userError } = await supabaseAdmin
+    // Get or create user in database
+    let dbUser
+    const { data: existingUser, error: userError } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('clerk_id', user.id)
       .single()
 
-    if (userError || !dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    if (existingUser) {
+      dbUser = existingUser
+    } else {
+      // Create user if doesn't exist
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          clerk_id: user.id,
+          email: user.emailAddresses[0]?.emailAddress || '',
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'
+        })
+        .select()
+        .single()
+      
+      if (createError) {
+        console.error('Error creating user:', createError)
+        return NextResponse.json({ error: 'Error creating user' }, { status: 500 })
+      }
+      dbUser = newUser
     }
 
     // Get user's sites
