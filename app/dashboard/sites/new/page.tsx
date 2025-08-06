@@ -15,10 +15,13 @@ export default function NewSitePage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
-    url: ''
+    url: '',
+    icon_url: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [automationResult, setAutomationResult] = useState<any>(null)
+  const [showIntegrationCode, setShowIntegrationCode] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,9 +29,11 @@ export default function NewSitePage() {
 
     setIsSubmitting(true)
     setError('')
+    setAutomationResult(null)
 
     try {
-      const response = await fetch('/api/sites', {
+      // Use the new automated endpoint
+      const response = await fetch('/api/sites/auto-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,17 +41,23 @@ export default function NewSitePage() {
         body: JSON.stringify({
           name: formData.name.trim(),
           url: formData.url.trim(),
-          user_id: user.id
+          icon_url: formData.icon_url.trim() || undefined,
         }),
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Error al crear el sitio')
+        throw new Error(result.error || 'Error al crear el sitio automáticamente')
       }
 
-      router.push('/dashboard/sites')
+      // Store the automation result to show integration code
+      setAutomationResult(result)
+      setShowIntegrationCode(true)
+      
+      // Don't redirect immediately - let user see the integration code first
+      console.log('✅ Site created with automation:', result)
+      
     } catch (error) {
       console.error('Error creating site:', error)
       setError(error instanceof Error ? error.message : 'Error al crear el sitio')
@@ -141,6 +152,21 @@ export default function NewSitePage() {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="icon_url">Ícono de Notificaciones (Opcional)</Label>
+                <Input
+                  id="icon_url"
+                  name="icon_url"
+                  type="url"
+                  placeholder="https://mitienda.com/icon.png"
+                  value={formData.icon_url}
+                  onChange={handleChange}
+                />
+                <p className="text-sm text-gray-500">
+                  URL del ícono que aparecerá en las notificaciones push (recomendado: 192x192px).
+                </p>
+              </div>
+
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm text-red-800">{error}</p>
@@ -164,6 +190,92 @@ export default function NewSitePage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Integration Code Display */}
+        {showIntegrationCode && automationResult && (
+          <Card className="mt-6 border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="text-green-800">
+                🎉 ¡Sitio Creado Automáticamente!
+              </CardTitle>
+              <CardDescription className="text-green-700">
+                Tu sitio ha sido configurado completamente. OneSignal se creó y configuró automáticamente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Automation Status */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg border">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">
+                    {automationResult.automation_status?.onesignal_created ? '✅' : '❌'}
+                  </div>
+                  <p className="text-sm font-medium">OneSignal App</p>
+                  <p className="text-xs text-gray-600">Creado automáticamente</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl mb-2">
+                    {automationResult.automation_status?.web_push_configured ? '✅' : '❌'}
+                  </div>
+                  <p className="text-sm font-medium">Web Push</p>
+                  <p className="text-xs text-gray-600">Configurado automáticamente</p>
+                </div>
+              </div>
+
+              {/* WordPress Integration */}
+              <div>
+                <Label className="text-base font-semibold">Código para WordPress (functions.php)</Label>
+                <div className="mt-2 p-4 bg-gray-900 rounded-lg overflow-x-auto">
+                  <code className="text-green-400 text-sm whitespace-pre-wrap">
+                    {automationResult.integration?.php_code}
+                  </code>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  {automationResult.integration?.instructions?.wordpress}
+                </p>
+              </div>
+
+              {/* HTML Integration */}
+              <div>
+                <Label className="text-base font-semibold">Código para HTML (cualquier sitio)</Label>
+                <div className="mt-2 p-4 bg-gray-900 rounded-lg overflow-x-auto">
+                  <code className="text-green-400 text-sm whitespace-pre-wrap">
+                    {automationResult.integration?.sdk_code}
+                  </code>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  {automationResult.integration?.instructions?.html}
+                </p>
+              </div>
+
+              {/* Site Details */}
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Detalles del Sitio</h4>
+                <div className="space-y-1 text-sm">
+                  <p><strong>ID del Sitio:</strong> {automationResult.site?.id}</p>
+                  <p><strong>OneSignal App ID:</strong> {automationResult.site?.onesignal_app_id}</p>
+                  <p><strong>Estado:</strong> {automationResult.automation_status?.ready_to_use ? '✅ Listo para usar' : '⚠️ Requiere configuración adicional'}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <Button 
+                  onClick={() => router.push('/dashboard/sites')}
+                  className="flex-1"
+                >
+                  Ver Todos los Sitios
+                </Button>
+                <Button 
+                  onClick={() => router.push(`/dashboard/notifications/new?site=${automationResult.site?.id}`)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Enviar Primera Notificación
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="mt-6">
           <CardHeader>
