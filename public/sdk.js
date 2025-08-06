@@ -5,10 +5,16 @@
 (function() {
   'use strict';
 
-  // Get configuration from script tag
+  // Get the site ID from the script tag
   const scriptTag = document.currentScript || document.querySelector('script[data-site]');
-  const siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
+  let siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
   const apiBase = scriptTag.getAttribute('data-api') || 'https://web-push-notifications-phi.vercel.app';
+  
+  // Force correct site ID for webcoders.es (temporary fix)
+  if (window.location.hostname === 'webcoders.es' || siteId === '34c91fe84b42') {
+    siteId = 'c670c8bcd133';
+    console.log('🔧 PushSaaS: Corrected site ID for webcoders.es');
+  }
   
   if (!siteId) {
     console.error('PushSaaS SDK: data-site attribute is required');
@@ -66,10 +72,19 @@
     }
   }
 
-  // Register service worker
+  // Register Service Worker
   async function registerServiceWorker() {
     try {
-      serviceWorkerRegistration = await navigator.serviceWorker.register('/service-worker.js');
+      console.log('🔧 PushSaaS: Registering Service Worker...');
+      
+      // Use our service worker from the same domain as the SDK
+      const serviceWorkerUrl = `${BASE_URL}/service-worker.js`;
+      console.log('📡 PushSaaS: Service Worker URL:', serviceWorkerUrl);
+      
+      const registration = await navigator.serviceWorker.register(serviceWorkerUrl, {
+        scope: '/'
+      });
+      serviceWorkerRegistration = registration;
       console.log('👷 PushSaaS: Service Worker registered');
       
       // Wait for service worker to be ready
