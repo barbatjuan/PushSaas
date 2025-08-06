@@ -44,3 +44,8 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# Deployment configs
+netlify.toml
+windsurf_deployment.yaml
+.netlify/

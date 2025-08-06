@@ -75,54 +75,17 @@ export async function POST(request: NextRequest) {
     // Generate unique site_id
     const siteId = uuidv4().replace(/-/g, '').substring(0, 12)
 
-    // Create OneSignal app for this site (REQUIRED for notifications to work)
-    let onesignalAppId = null
-    let onesignalError = null
+    // Use existing OneSignal app (temporary solution while Organization API Key is being resolved)
+    const onesignalAppId = process.env.ONESIGNAL_APP_ID
     
-    try {
-      console.log('Creating OneSignal app for:', name, url)
-      
-      const onesignalResponse = await fetch('https://onesignal.com/api/v1/apps', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`
-        },
-        body: JSON.stringify({
-          name: `${name} - ${siteId}`,
-          apns_env: 'production',
-          chrome_web_origin: url,
-          chrome_web_default_notification_icon: `${process.env.NEXT_PUBLIC_APP_URL}/icon-192.png`,
-          chrome_web_sub_domain: null,
-          site_name: name
-        })
-      })
-
-      const responseText = await onesignalResponse.text()
-      console.log('OneSignal response status:', onesignalResponse.status)
-      console.log('OneSignal response:', responseText)
-
-      if (onesignalResponse.ok) {
-        const onesignalData = JSON.parse(responseText)
-        onesignalAppId = onesignalData.id
-        console.log('OneSignal app created successfully:', onesignalAppId)
-      } else {
-        onesignalError = `OneSignal API error (${onesignalResponse.status}): ${responseText}`
-        console.error('Failed to create OneSignal app:', onesignalError)
-      }
-    } catch (error) {
-      onesignalError = `OneSignal exception: ${error instanceof Error ? error.message : 'Unknown error'}`
-      console.error('Error creating OneSignal app:', onesignalError)
-    }
-
-    // If OneSignal creation failed, return error (don't create incomplete site)
     if (!onesignalAppId) {
       return NextResponse.json({ 
-        error: 'Failed to create OneSignal app for notifications', 
-        details: onesignalError,
-        suggestion: 'Please check OneSignal API credentials and try again'
+        error: 'OneSignal App ID not configured', 
+        suggestion: 'Please configure ONESIGNAL_APP_ID environment variable'
       }, { status: 500 })
     }
+    
+    console.log('Using existing OneSignal app:', onesignalAppId, 'for site:', name, url)
 
     // Create site in database
     const { data: newSite, error: siteError } = await supabaseAdmin
