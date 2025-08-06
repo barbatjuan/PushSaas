@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Site is not active' }, { status: 400 })
     }
 
-    // Check plan limits
+    // Check plan limits - Fixed TypeScript array access
     const userPlan = (site.users as any)?.[0]?.plan || 'free'
     const maxSubscribers = userPlan === 'paid' ? 10000 : 500
 
