@@ -3,7 +3,7 @@
 import { useCurrentUser } from '@/lib/hooks/use-user'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Settings, Users, Copy, ExternalLink } from 'lucide-react'
+import { Plus, Settings, Users, Copy, ExternalLink, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -15,29 +15,27 @@ export default function SitesPage() {
   const { user, loading } = useCurrentUser()
   const [sites, setSites] = useState<Site[]>([])
   const [loadingSites, setLoadingSites] = useState(true)
+  const [deletingSite, setDeletingSite] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
-
-    const fetchSites = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('sites')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-        setSites(data || [])
-      } catch (error) {
-        console.error('Error fetching sites:', error)
-      } finally {
-        setLoadingSites(false)
-      }
-    }
-
     fetchSites()
   }, [user])
+
+  const fetchSites = async () => {
+    try {
+      setLoadingSites(true)
+      const response = await fetch('/api/sites')
+      if (!response.ok) throw new Error('Failed to fetch sites')
+      const data = await response.json()
+      setSites(data || [])
+    } catch (error) {
+      console.error('Error fetching sites:', error)
+      alert('Error al cargar sitios')
+    } finally {
+      setLoadingSites(false)
+    }
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -46,6 +44,33 @@ export default function SitesPage() {
 
   const getScriptTag = (siteId: string) => {
     return `<script src="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sdk.js" data-site="${siteId}"></script>`
+  }
+
+  const deleteSite = async (siteId: string, siteName: string) => {
+    if (!confirm(`¿Estás seguro de que quieres eliminar el sitio "${siteName}"? Esta acción no se puede deshacer.`)) {
+      return
+    }
+
+    try {
+      setDeletingSite(siteId)
+      const response = await fetch(`/api/sites/${siteId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al eliminar sitio')
+      }
+
+      // Refresh sites list
+      await fetchSites()
+      alert('Sitio eliminado correctamente')
+    } catch (error) {
+      console.error('Error deleting site:', error)
+      alert('Error al eliminar sitio: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+    } finally {
+      setDeletingSite(null)
+    }
   }
 
   if (loading) {
@@ -161,6 +186,16 @@ export default function SitesPage() {
                       Configurar
                     </Button>
                   </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => deleteSite(site.site_id, site.name)}
+                    disabled={deletingSite === site.site_id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="mr-1 h-3 w-3" />
+                    {deletingSite === site.site_id ? 'Eliminando...' : 'Eliminar'}
+                  </Button>
                 </div>
 
                 {site.expires_at && new Date(site.expires_at) < new Date() && (
