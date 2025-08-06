@@ -1,226 +1,264 @@
+/**
+ * PushSaaS SDK - Native Web Push API Implementation
+ * No external dependencies - Pure Web Push API + VAPID
+ */
 (function() {
   'use strict';
 
-  // Get the site ID from the script tag
+  // Get configuration from script tag
   const scriptTag = document.currentScript || document.querySelector('script[data-site]');
-  let siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
-  
-  // Debug logging
-  console.log('PushSaaS Debug: Script tag found:', scriptTag);
-  console.log('PushSaaS Debug: Raw siteId from attribute:', siteId);
-  
-  // Force correct site ID if we detect the wrong one
-  if (siteId === '34c91fe84b42' || !siteId) {
-    console.log('PushSaaS Debug: Forcing correct site ID');
-    siteId = 'c670c8bcd133';
-  }
-  
-  console.log('PushSaaS Debug: Final siteId being used:', siteId);
+  const siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
+  const apiBase = scriptTag.getAttribute('data-api') || 'https://web-push-notifications-phi.vercel.app';
   
   if (!siteId) {
     console.error('PushSaaS SDK: data-site attribute is required');
     return;
   }
 
-  // Configuration
-  const API_BASE = scriptTag.getAttribute('data-api') || 'https://web-push-notifications-phi.vercel.app';
-  const ONESIGNAL_APP_ID = null; // Will be fetched from API
+  console.log('🚀 PushSaaS SDK: Initializing for site:', siteId);
 
   // State
   let isInitialized = false;
-  let onesignalAppId = null;
+  let vapidPublicKey = null;
+  let serviceWorkerRegistration = null;
+  let pushSubscription = null;
 
   // Initialize the SDK
   async function init() {
     if (isInitialized) return;
     
     try {
-      // Get site configuration from API with CORS fallback
-      let config;
-      try {
-        const response = await fetch(`${API_BASE}/api/sites/${siteId}/config`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch site configuration');
-        }
-        config = await response.json();
-      } catch (corsError) {
-        console.log('CORS blocked, trying alternative method...');
-        // Fallback: use a different approach or show error
-        throw new Error('CORS blocked: ' + corsError.message);
-      }
-      onesignalAppId = config.onesignal_app_id;
-      
-      if (!onesignalAppId) {
-        console.error('PushSaaS SDK: OneSignal app ID not configured for this site');
-        return;
+      // Check if browser supports push notifications
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        throw new Error('Push notifications not supported in this browser');
       }
 
-      // Initialize OneSignal
-      await initOneSignal();
+      // Get VAPID public key from backend
+      await fetchVapidKey();
+      
+      // Register service worker
+      await registerServiceWorker();
+      
+      // Check existing subscription
+      await checkExistingSubscription();
       
       isInitialized = true;
-      console.log('PushSaaS SDK initialized successfully');
+      console.log('✅ PushSaaS SDK: Initialized successfully');
+      
     } catch (error) {
-      console.error('PushSaaS SDK initialization failed:', error);
+      console.error('❌ PushSaaS SDK: Initialization failed:', error);
     }
   }
 
-  // Initialize OneSignal
-  async function initOneSignal() {
-    return new Promise((resolve, reject) => {
-      // Check if OneSignal is already loaded to prevent double initialization
-      if (window.OneSignal && typeof window.OneSignal.init === 'function') {
-        console.log('PushSaaS: OneSignal already initialized');
-        resolve();
-        return;
+  // Fetch VAPID public key from backend
+  async function fetchVapidKey() {
+    try {
+      const response = await fetch(`${apiBase}/api/vapid-key`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch VAPID key');
       }
-
-      // Load OneSignal SDK
-      const script = document.createElement('script');
-      script.src = 'https://cdn.onesignal.com/sdks/OneSignalSDK.js';
-      script.async = true;
-      
-      script.onload = () => {
-        window.OneSignal = window.OneSignal || [];
-        
-        window.OneSignal.push(function() {
-          window.OneSignal.init({
-            appId: onesignalAppId,
-            allowLocalhostAsSecureOrigin: true,
-            autoRegister: false, // Don't auto-register
-            notifyButton: {
-              enable: false
-            }
-          }).then(() => {
-            console.log('PushSaaS: OneSignal initialized successfully');
-            
-            // Handle subscription changes
-            window.OneSignal.on('subscriptionChange', function(isSubscribed) {
-              if (isSubscribed) {
-                window.OneSignal.getUserId().then(function(userId) {
-                  if (userId) {
-                    registerSubscriber(userId);
-                  }
-                });
-              }
-            });
-            
-            resolve();
-          }).catch((error) => {
-            console.error('PushSaaS: OneSignal init failed:', error);
-            reject(error);
-          });
-        });
-      };
-
-      script.onerror = () => reject(new Error('Failed to load OneSignal SDK'));
-      document.head.appendChild(script);
-    });
+      const data = await response.json();
+      vapidPublicKey = data.publicKey;
+      console.log('🔑 PushSaaS: VAPID key fetched');
+    } catch (error) {
+      console.error('❌ PushSaaS: Failed to fetch VAPID key:', error);
+      throw error;
+    }
   }
 
-  // Register subscriber with our API
-  async function registerSubscriber(token) {
+  // Register service worker
+  async function registerServiceWorker() {
     try {
-      const response = await fetch(`${API_BASE}/api/subscribers`, {
+      serviceWorkerRegistration = await navigator.serviceWorker.register('/service-worker.js');
+      console.log('👷 PushSaaS: Service Worker registered');
+      
+      // Wait for service worker to be ready
+      await navigator.serviceWorker.ready;
+      
+    } catch (error) {
+      console.error('❌ PushSaaS: Service Worker registration failed:', error);
+      throw error;
+    }
+  }
+
+  // Check for existing subscription
+  async function checkExistingSubscription() {
+    try {
+      if (!serviceWorkerRegistration) return;
+      
+      pushSubscription = await serviceWorkerRegistration.pushManager.getSubscription();
+      
+      if (pushSubscription) {
+        console.log('📱 PushSaaS: Existing subscription found');
+        // Optionally sync with backend
+        await syncSubscriptionWithBackend(pushSubscription);
+      }
+    } catch (error) {
+      console.error('❌ PushSaaS: Failed to check existing subscription:', error);
+    }
+  }
+
+  // Convert VAPID key to Uint8Array
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+    
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  // Subscribe to push notifications
+  async function subscribeToPush() {
+    try {
+      if (!serviceWorkerRegistration || !vapidPublicKey) {
+        throw new Error('SDK not properly initialized');
+      }
+
+      // Request permission
+      const permission = await Notification.requestPermission();
+      
+      if (permission !== 'granted') {
+        throw new Error('Notification permission denied');
+      }
+
+      console.log('✅ PushSaaS: Permission granted');
+
+      // Subscribe to push manager
+      pushSubscription = await serviceWorkerRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+      });
+
+      console.log('📱 PushSaaS: Push subscription created');
+
+      // Send subscription to backend
+      await syncSubscriptionWithBackend(pushSubscription);
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ PushSaaS: Subscription failed:', error);
+      return false;
+    }
+  }
+
+  // Sync subscription with backend
+  async function syncSubscriptionWithBackend(subscription) {
+    try {
+      const response = await fetch(`${apiBase}/api/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           site_id: siteId,
-          token: token,
+          subscription: subscription.toJSON(),
           user_agent: navigator.userAgent,
-          url: window.location.href
+          url: window.location.href,
+          timestamp: new Date().toISOString()
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to register subscriber');
+        throw new Error('Failed to sync subscription with backend');
       }
 
-      console.log('PushSaaS: Subscriber registered successfully');
+      console.log('✅ PushSaaS: Subscription synced with backend');
+      
     } catch (error) {
-      console.error('PushSaaS: Failed to register subscriber:', error);
+      console.error('❌ PushSaaS: Failed to sync subscription:', error);
+      throw error;
+    }
+  }
+
+  // Get subscription status
+  async function getSubscriptionStatus() {
+    try {
+      if (!serviceWorkerRegistration) {
+        return {
+          isSubscribed: false,
+          permission: Notification.permission,
+          supported: 'serviceWorker' in navigator && 'PushManager' in window
+        };
+      }
+
+      const subscription = await serviceWorkerRegistration.pushManager.getSubscription();
+      
+      return {
+        isSubscribed: !!subscription,
+        permission: Notification.permission,
+        supported: true,
+        subscription: subscription ? subscription.toJSON() : null
+      };
+      
+    } catch (error) {
+      console.error('❌ PushSaaS: Failed to get subscription status:', error);
+      return {
+        isSubscribed: false,
+        permission: Notification.permission,
+        supported: false,
+        error: error.message
+      };
     }
   }
 
   // Public API
   window.PushSaaS = {
-    // Request permission and subscribe
+    // Subscribe to push notifications
     subscribe: async function() {
       if (!isInitialized) {
-        console.error('PushSaaS SDK not initialized');
+        console.error('❌ PushSaaS SDK: Not initialized yet');
         return false;
       }
-
-      try {
-        // Use correct OneSignal API for requesting permission
-        if (window.OneSignal.showNativePrompt) {
-          await window.OneSignal.showNativePrompt();
-          console.log('PushSaaS: Native prompt shown');
-          return true;
-        } else if (window.OneSignal.registerForPushNotifications) {
-          await window.OneSignal.registerForPushNotifications();
-          console.log('PushSaaS: Registered for push notifications');
-          return true;
-        } else {
-          // Fallback to browser native API
-          const permission = await Notification.requestPermission();
-          console.log('PushSaaS: Browser permission result:', permission);
-          return permission === 'granted';
-        }
-      } catch (error) {
-        console.error('PushSaaS: Subscription failed:', error);
-        // Final fallback to browser native API
-        try {
-          const permission = await Notification.requestPermission();
-          console.log('PushSaaS: Fallback permission result:', permission);
-          return permission === 'granted';
-        } catch (fallbackError) {
-          console.error('PushSaaS: All methods failed:', fallbackError);
-        }
-        return false;
-      }
+      return await subscribeToPush();
     },
 
-    // Check if user is subscribed
+    // Get current status
+    getStatus: async function() {
+      return await getSubscriptionStatus();
+    },
+
+    // Check if subscribed (simple boolean)
     isSubscribed: async function() {
-      if (!isInitialized) return false;
-      
+      const status = await getSubscriptionStatus();
+      return status.isSubscribed;
+    },
+
+    // Unsubscribe from push notifications
+    unsubscribe: async function() {
       try {
-        // Use correct OneSignal API methods
-        if (window.OneSignal.isPushNotificationsEnabled) {
-          return await window.OneSignal.isPushNotificationsEnabled();
-        } else if (window.OneSignal.isSubscribed) {
-          return await window.OneSignal.isSubscribed();
-        } else {
-          // Fallback to browser permission check
-          return Notification.permission === 'granted';
+        if (!serviceWorkerRegistration) return false;
+        
+        const subscription = await serviceWorkerRegistration.pushManager.getSubscription();
+        if (subscription) {
+          await subscription.unsubscribe();
+          console.log('🚫 PushSaaS: Unsubscribed successfully');
+          return true;
         }
+        return false;
       } catch (error) {
-        console.error('PushSaaS: Failed to check subscription status:', error);
-        // Fallback to browser permission check
-        return Notification.permission === 'granted';
+        console.error('❌ PushSaaS: Unsubscribe failed:', error);
+        return false;
       }
     },
 
-    // Get subscription status
-    getSubscriptionStatus: async function() {
-      if (!isInitialized) return null;
-      
-      try {
-        const isSubscribed = await window.OneSignal.isSubscribed();
-        const userId = isSubscribed ? await window.OneSignal.getUserId() : null;
-        
-        return {
-          isSubscribed,
-          userId,
-          permission: Notification.permission
-        };
-      } catch (error) {
-        console.error('PushSaaS: Failed to get subscription status:', error);
-        return null;
-      }
+    // Get SDK info
+    getInfo: function() {
+      return {
+        version: '2.0.0',
+        siteId: siteId,
+        apiBase: apiBase,
+        isInitialized: isInitialized,
+        hasVapidKey: !!vapidPublicKey,
+        hasServiceWorker: !!serviceWorkerRegistration
+      };
     }
   };
 
@@ -231,15 +269,15 @@
     init();
   }
 
-  // Show subscription prompt after a delay (optional)
-  setTimeout(() => {
-    if (isInitialized && Notification.permission === 'default') {
-      // You can customize this behavior
-      console.log('PushSaaS: Ready to show subscription prompt');
-      
-      // Auto-prompt after 5 seconds
-      window.PushSaaS.subscribe();
-    }
-  }, 5000);
+  // Auto-prompt after delay (configurable)
+  const autoPromptDelay = parseInt(scriptTag.getAttribute('data-auto-prompt') || '5000');
+  if (autoPromptDelay > 0) {
+    setTimeout(async () => {
+      if (isInitialized && Notification.permission === 'default') {
+        console.log('🔔 PushSaaS: Showing auto-prompt');
+        await window.PushSaaS.subscribe();
+      }
+    }, autoPromptDelay);
+  }
 
 })();
