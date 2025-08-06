@@ -7,6 +7,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle preflight OPTIONS request
+export async function OPTIONS(request: NextRequest) {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -16,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!siteId || !subscription) {
       return NextResponse.json(
         { error: 'Missing required fields: siteId and subscription' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -77,7 +92,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Subscription updated successfully',
         subscriptionId: existingSubscription.id
-      });
+      }, { headers: corsHeaders });
     } else {
       // Create new subscription
       const { data: newSubscription, error: insertError } = await supabase
@@ -106,14 +121,14 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Subscription created successfully',
         subscriptionId: newSubscription.id
-      });
+      }, { headers: corsHeaders });
     }
 
   } catch (error) {
     console.error('❌ Subscribe endpoint error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
