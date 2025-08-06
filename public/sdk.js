@@ -445,9 +445,26 @@
 
     // Allow button
     allowBtn.addEventListener('click', async () => {
-      popup.remove();
       console.log('✅ PushSaaS: User clicked Allow');
-      await window.PushSaaS.subscribe();
+      
+      // First, request native browser permission
+      try {
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+          popup.remove();
+          console.log('🎉 PushSaaS: Native permission granted, proceeding with subscription');
+          await window.PushSaaS.subscribe();
+        } else {
+          popup.remove();
+          console.log('❌ PushSaaS: Native permission denied by user');
+          alert('❌ Para recibir notificaciones, necesitas permitir las notificaciones en tu navegador.');
+        }
+      } catch (error) {
+        popup.remove();
+        console.error('❌ PushSaaS: Error requesting native permission:', error);
+        alert('❌ Error al solicitar permisos de notificación.');
+      }
     });
 
     // Deny button
@@ -473,13 +490,13 @@
     }, 30000);
   }
 
-  // Auto-prompt after delay (configurable)
+  // Auto-prompt after delay (configurable) - NATIVE POPUP
   const autoPromptDelay = parseInt(scriptTag.getAttribute('data-auto-prompt') || '5000');
   if (autoPromptDelay > 0) {
-    setTimeout(() => {
+    setTimeout(async () => {
       if (isInitialized && Notification.permission === 'default') {
-        console.log('🔔 PushSaaS: Showing beautiful popup');
-        createNotificationPopup();
+        console.log('🔔 PushSaaS: Showing native popup');
+        await window.PushSaaS.subscribe();
       }
     }, autoPromptDelay);
   }
