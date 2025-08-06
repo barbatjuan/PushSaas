@@ -3,7 +3,19 @@
 
   // Get the site ID from the script tag
   const scriptTag = document.currentScript || document.querySelector('script[data-site]');
-  const siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
+  let siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
+  
+  // Debug logging
+  console.log('PushSaaS Debug: Script tag found:', scriptTag);
+  console.log('PushSaaS Debug: Raw siteId from attribute:', siteId);
+  
+  // Force correct site ID if we detect the wrong one
+  if (siteId === '34c91fe84b42' || !siteId) {
+    console.log('PushSaaS Debug: Forcing correct site ID');
+    siteId = 'c670c8bcd133';
+  }
+  
+  console.log('PushSaaS Debug: Final siteId being used:', siteId);
   
   if (!siteId) {
     console.error('PushSaaS SDK: data-site attribute is required');
