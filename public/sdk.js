@@ -78,7 +78,7 @@
       console.log('🔧 PushSaaS: Registering Service Worker...');
       
       // Use our service worker from the same domain as the SDK
-      const serviceWorkerUrl = `${BASE_URL}/service-worker.js`;
+      const serviceWorkerUrl = `${apiBase}/service-worker.js`;
       console.log('📡 PushSaaS: Service Worker URL:', serviceWorkerUrl);
       
       const registration = await navigator.serviceWorker.register(serviceWorkerUrl, {
