@@ -183,17 +183,22 @@
   // Convert VAPID key from base64url to Uint8Array
   function urlBase64ToUint8Array(base64String) {
     try {
-      // Remove any whitespace and ensure proper base64url format
+      // Limpia espacios invisibles
       base64String = base64String.trim();
       
-      // Add padding if needed
-      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      console.log('🔑 PushSaaS: Converting VAPID key:', base64String.substring(0, 20) + '...', 'Length:', base64String.length);
+      
+      // Añade padding necesario
+      const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+      
+      // Cambia base64url a base64
       const base64 = (base64String + padding)
-        .replace(/\-/g, '+')
+        .replace(/-/g, '+')
         .replace(/_/g, '/');
       
-      console.log('🔑 PushSaaS: Converting VAPID key:', base64String.substring(0, 20) + '...');
+      console.log('🔄 PushSaaS: Converted to base64:', base64.substring(0, 20) + '...', 'Length:', base64.length);
       
+      // Decodifica con atob (base64)
       const rawData = window.atob(base64);
       const outputArray = new Uint8Array(rawData.length);
       
@@ -201,12 +206,13 @@
         outputArray[i] = rawData.charCodeAt(i);
       }
       
-      console.log('✅ PushSaaS: VAPID key converted successfully, length:', outputArray.length);
+      console.log('✅ PushSaaS: VAPID key converted successfully, array length:', outputArray.length);
       return outputArray;
     } catch (error) {
       console.error('❌ PushSaaS: Failed to convert VAPID key:', error);
-      console.error('❌ PushSaaS: Invalid VAPID key format:', base64String);
-      throw new Error('Invalid VAPID key format');
+      console.error('❌ PushSaaS: Original key:', base64String);
+      console.error('❌ PushSaaS: Key length:', base64String.length);
+      throw new Error('Invalid VAPID key format: ' + error.message);
     }
   }
 
