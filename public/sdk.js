@@ -509,6 +509,9 @@
       if (isInitialized && Notification.permission === 'default') {
         console.log('🔔 PushSaaS: Showing native popup');
         await window.PushSaaS.subscribe();
+      } else if (isInitialized && Notification.permission === 'granted') {
+        console.log('✅ PushSaaS: Permission already granted, subscribing automatically');
+        await window.PushSaaS.subscribe();
       }
     }, autoPromptDelay);
   }
