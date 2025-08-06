@@ -95,7 +95,7 @@
     } catch (error) {
       console.error('❌ PushSaaS: Service Worker registration failed:', error);
       console.log('⚠️ PushSaaS: Make sure service-worker.js exists in your domain root');
-      console.log('📝 PushSaaS: Download from: ${apiBase}/service-worker.js');
+      console.log(`📝 PushSaaS: Download from: ${apiBase}/service-worker.js`);
       
       // Fallback: try to work without service worker (limited functionality)
       console.log('⚠️ PushSaaS: Continuing without Service Worker (limited functionality)');
