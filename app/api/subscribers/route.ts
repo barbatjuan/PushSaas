@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     // Get site information and check if it's active
     const { data: site, error: siteError } = await supabaseAdmin
       .from('sites')
-      .select('id, user_id, status, subscriber_count, users(plan)')
+      .select('id, user_id, status, subscriber_count')
       .eq('site_id', site_id)
       .single()
 
@@ -24,8 +24,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Site is not active' }, { status: 400 })
     }
 
-    // Check plan limits - Fixed TypeScript array access
-    const userPlan = (site.users as any)?.[0]?.plan || 'free'
+    // Get user plan separately to avoid TypeScript issues
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('plan')
+      .eq('id', site.user_id)
+      .single()
+
+    const userPlan = userData?.plan || 'free'
     const maxSubscribers = userPlan === 'paid' ? 10000 : 500
 
     if (site.subscriber_count >= maxSubscribers) {
