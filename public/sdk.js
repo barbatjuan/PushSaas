@@ -11,7 +11,7 @@
   }
 
   // Configuration
-  const API_BASE = scriptTag.getAttribute('data-api') || 'http://localhost:3000';
+  const API_BASE = scriptTag.getAttribute('data-api') || 'https://web-push-notifications-phi.vercel.app';
   const ONESIGNAL_APP_ID = null; // Will be fetched from API
 
   // State
