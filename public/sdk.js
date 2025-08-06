@@ -154,10 +154,21 @@
       }
 
       try {
-        const permission = await window.OneSignal.requestPermission();
+        // Use modern OneSignal API
+        const permission = await window.OneSignal.Notifications.requestPermission();
+        console.log('PushSaaS: Permission result:', permission);
         return permission;
       } catch (error) {
         console.error('PushSaaS: Subscription failed:', error);
+        // Fallback to older API if available
+        try {
+          if (window.OneSignal.showNativePrompt) {
+            await window.OneSignal.showNativePrompt();
+            return true;
+          }
+        } catch (fallbackError) {
+          console.error('PushSaaS: Fallback also failed:', fallbackError);
+        }
         return false;
       }
     },
@@ -167,10 +178,16 @@
       if (!isInitialized) return false;
       
       try {
-        return await window.OneSignal.isSubscribed();
+        // Use modern OneSignal API
+        return await window.OneSignal.User.PushSubscription.optedIn;
       } catch (error) {
-        console.error('PushSaaS: Failed to check subscription status:', error);
-        return false;
+        // Fallback to older API
+        try {
+          return await window.OneSignal.isSubscribed();
+        } catch (fallbackError) {
+          console.error('PushSaaS: Failed to check subscription status:', fallbackError);
+          return false;
+        }
       }
     },
 
