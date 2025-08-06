@@ -3,40 +3,6 @@ import { currentUser } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { v4 as uuidv4 } from 'uuid'
 
-async function ensureUserExists(clerkUser: any) {
-  // Try to get existing user
-  const { data: existingUser, error: userError } = await supabaseAdmin
-    .from('users')
-    .select('*')
-    .eq('clerk_id', clerkUser.id)
-    .single()
-
-  if (existingUser) {
-    return existingUser
-  }
-
-  // Create user if doesn't exist
-  const { data: newUser, error: createError } = await supabaseAdmin
-    .from('users')
-    .insert({
-      clerk_id: clerkUser.id,
-      email: clerkUser.emailAddresses[0]?.emailAddress || '',
-      name: clerkUser.firstName && clerkUser.lastName 
-        ? `${clerkUser.firstName} ${clerkUser.lastName}` 
-        : clerkUser.username || 'User',
-      plan: 'free'
-    })
-    .select()
-    .single()
-  
-  if (createError) {
-    console.error('Error creating user:', createError)
-    throw new Error('Failed to create user: ' + createError.message)
-  }
-  
-  return newUser
-}
-
 export async function POST(request: NextRequest) {
   try {
     const user = await currentUser()
@@ -44,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, url } = await request.json()
+    const { name, url, user_id } = await request.json()
 
     if (!name || !url) {
       return NextResponse.json({ error: 'Name and URL are required' }, { status: 400 })
@@ -58,10 +24,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create user in database
-    const dbUser = await ensureUserExists(user)
+    let dbUser
+    const { data: existingUser, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('clerk_id', user.id)
+      .single()
+
+    if (existingUser) {
+      dbUser = existingUser
+    } else {
+      // Create user if doesn't exist
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          clerk_id: user.id,
+          email: user.emailAddresses[0]?.emailAddress || '',
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'
+        })
+        .select()
+        .single()
+      
+      if (createError) {
+        console.error('Error creating user:', createError)
+        return NextResponse.json({ error: 'Error creating user' }, { status: 500 })
+      }
+      dbUser = newUser
+    }
 
     // Check if user already has a site with this URL
-    const { data: existingSite } = await supabaseAdmin
+    const { data: existingSite, error: existingError } = await supabaseAdmin
       .from('sites')
       .select('id')
       .eq('user_id', dbUser.id)
@@ -126,11 +118,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newSite, { status: 201 })
   } catch (error) {
-    console.error('Error in sites POST API:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 })
+    console.error('Error in sites API:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -142,7 +131,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Get or create user in database
-    const dbUser = await ensureUserExists(user)
+    let dbUser
+    const { data: existingUser, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('clerk_id', user.id)
+      .single()
+
+    if (existingUser) {
+      dbUser = existingUser
+    } else {
+      // Create user if doesn't exist
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          clerk_id: user.id,
+          email: user.emailAddresses[0]?.emailAddress || '',
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'User'
+        })
+        .select()
+        .single()
+      
+      if (createError) {
+        console.error('Error creating user:', createError)
+        return NextResponse.json({ error: 'Error creating user' }, { status: 500 })
+      }
+      dbUser = newUser
+    }
 
     // Get user's sites
     const { data: sites, error: sitesError } = await supabaseAdmin
@@ -156,12 +171,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Error fetching sites' }, { status: 500 })
     }
 
-    return NextResponse.json(sites || [])
+    return NextResponse.json(sites)
   } catch (error) {
     console.error('Error in sites GET API:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
