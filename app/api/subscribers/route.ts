@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Force Vercel to use latest version - Build fix
+
 export async function POST(request: NextRequest) {
   try {
     const { site_id, token, user_agent, url } = await request.json()
