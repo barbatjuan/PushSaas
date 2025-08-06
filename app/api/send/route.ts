@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
-import { webpush } from '@/lib/webpush';
+import { getWebPush } from '@/lib/webpush';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
     const results = await Promise.allSettled(
       subscriptions.map(async (subscription) => {
         try {
+          const webpush = getWebPush();
           await webpush.sendNotification(
             subscription.subscription_data,
             JSON.stringify(notificationPayload)
