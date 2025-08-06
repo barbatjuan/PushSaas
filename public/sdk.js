@@ -154,20 +154,30 @@
       }
 
       try {
-        // Use modern OneSignal API
-        const permission = await window.OneSignal.Notifications.requestPermission();
-        console.log('PushSaaS: Permission result:', permission);
-        return permission;
+        // Use correct OneSignal API for requesting permission
+        if (window.OneSignal.showNativePrompt) {
+          await window.OneSignal.showNativePrompt();
+          console.log('PushSaaS: Native prompt shown');
+          return true;
+        } else if (window.OneSignal.registerForPushNotifications) {
+          await window.OneSignal.registerForPushNotifications();
+          console.log('PushSaaS: Registered for push notifications');
+          return true;
+        } else {
+          // Fallback to browser native API
+          const permission = await Notification.requestPermission();
+          console.log('PushSaaS: Browser permission result:', permission);
+          return permission === 'granted';
+        }
       } catch (error) {
         console.error('PushSaaS: Subscription failed:', error);
-        // Fallback to older API if available
+        // Final fallback to browser native API
         try {
-          if (window.OneSignal.showNativePrompt) {
-            await window.OneSignal.showNativePrompt();
-            return true;
-          }
+          const permission = await Notification.requestPermission();
+          console.log('PushSaaS: Fallback permission result:', permission);
+          return permission === 'granted';
         } catch (fallbackError) {
-          console.error('PushSaaS: Fallback also failed:', fallbackError);
+          console.error('PushSaaS: All methods failed:', fallbackError);
         }
         return false;
       }
@@ -178,16 +188,19 @@
       if (!isInitialized) return false;
       
       try {
-        // Use modern OneSignal API
-        return await window.OneSignal.User.PushSubscription.optedIn;
-      } catch (error) {
-        // Fallback to older API
-        try {
+        // Use correct OneSignal API methods
+        if (window.OneSignal.isPushNotificationsEnabled) {
+          return await window.OneSignal.isPushNotificationsEnabled();
+        } else if (window.OneSignal.isSubscribed) {
           return await window.OneSignal.isSubscribed();
-        } catch (fallbackError) {
-          console.error('PushSaaS: Failed to check subscription status:', fallbackError);
-          return false;
+        } else {
+          // Fallback to browser permission check
+          return Notification.permission === 'granted';
         }
+      } catch (error) {
+        console.error('PushSaaS: Failed to check subscription status:', error);
+        // Fallback to browser permission check
+        return Notification.permission === 'granted';
       }
     },
 
