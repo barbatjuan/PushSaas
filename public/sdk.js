@@ -68,6 +68,13 @@
   // Initialize OneSignal
   async function initOneSignal() {
     return new Promise((resolve, reject) => {
+      // Check if OneSignal is already loaded to prevent double initialization
+      if (window.OneSignal && typeof window.OneSignal.init === 'function') {
+        console.log('PushSaaS: OneSignal already initialized');
+        resolve();
+        return;
+      }
+
       // Load OneSignal SDK
       const script = document.createElement('script');
       script.src = 'https://cdn.onesignal.com/sdks/OneSignalSDK.js';
@@ -80,27 +87,32 @@
           window.OneSignal.init({
             appId: onesignalAppId,
             allowLocalhostAsSecureOrigin: true,
+            autoRegister: false, // Don't auto-register
             notifyButton: {
-              enable: false // We'll handle the subscription prompt ourselves
+              enable: false
             }
+          }).then(() => {
+            console.log('PushSaaS: OneSignal initialized successfully');
+            
+            // Handle subscription changes
+            window.OneSignal.on('subscriptionChange', function(isSubscribed) {
+              if (isSubscribed) {
+                window.OneSignal.getUserId().then(function(userId) {
+                  if (userId) {
+                    registerSubscriber(userId);
+                  }
+                });
+              }
+            });
+            
+            resolve();
+          }).catch((error) => {
+            console.error('PushSaaS: OneSignal init failed:', error);
+            reject(error);
           });
-
-          // Handle subscription changes
-          window.OneSignal.on('subscriptionChange', function(isSubscribed) {
-            if (isSubscribed) {
-              // Get the subscription token and send to our API
-              window.OneSignal.getUserId().then(function(userId) {
-                if (userId) {
-                  registerSubscriber(userId);
-                }
-              });
-            }
-          });
-
-          resolve();
         });
       };
-      
+
       script.onerror = () => reject(new Error('Failed to load OneSignal SDK'));
       document.head.appendChild(script);
     });
