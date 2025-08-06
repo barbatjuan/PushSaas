@@ -16,6 +16,8 @@ export default function SitesPage() {
   const [sites, setSites] = useState<Site[]>([])
   const [loadingSites, setLoadingSites] = useState(true)
   const [deletingSite, setDeletingSite] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState<{siteId: string, siteName: string} | null>(null)
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -31,7 +33,7 @@ export default function SitesPage() {
       setSites(data || [])
     } catch (error) {
       console.error('Error fetching sites:', error)
-      alert('Error al cargar sitios')
+      setNotification({type: 'error', message: 'Error al cargar sitios'})
     } finally {
       setLoadingSites(false)
     }
@@ -46,13 +48,18 @@ export default function SitesPage() {
     return `<script src="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sdk.js" data-site="${siteId}"></script>`
   }
 
-  const deleteSite = async (siteId: string, siteName: string) => {
-    if (!confirm(`¿Estás seguro de que quieres eliminar el sitio "${siteName}"? Esta acción no se puede deshacer.`)) {
-      return
-    }
+  const confirmDelete = (siteId: string, siteName: string) => {
+    setShowDeleteDialog({siteId, siteName})
+  }
 
+  const deleteSite = async () => {
+    if (!showDeleteDialog) return
+    
+    const {siteId, siteName} = showDeleteDialog
+    
     try {
       setDeletingSite(siteId)
+      setShowDeleteDialog(null)
       const response = await fetch(`/api/sites/${siteId}`, {
         method: 'DELETE'
       })
@@ -64,10 +71,10 @@ export default function SitesPage() {
 
       // Refresh sites list
       await fetchSites()
-      alert('Sitio eliminado correctamente')
+      setNotification({type: 'success', message: 'Sitio eliminado correctamente'})
     } catch (error) {
       console.error('Error deleting site:', error)
-      alert('Error al eliminar sitio: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+      setNotification({type: 'error', message: 'Error al eliminar sitio: ' + (error instanceof Error ? error.message : 'Error desconocido')})
     } finally {
       setDeletingSite(null)
     }
@@ -189,7 +196,7 @@ export default function SitesPage() {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => deleteSite(site.site_id, site.name)}
+                    onClick={() => confirmDelete(site.site_id, site.name)}
                     disabled={deletingSite === site.site_id}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
@@ -221,6 +228,93 @@ export default function SitesPage() {
             </CardDescription>
           </CardHeader>
         </Card>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Eliminar sitio
+                </h3>
+              </div>
+            </div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-500">
+                ¿Estás seguro de que quieres eliminar el sitio <strong>"{showDeleteDialog.siteName}"</strong>? 
+                Esta acción no se puede deshacer y se eliminarán todos los suscriptores asociados.
+              </p>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={deleteSite}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Eliminar sitio
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`rounded-md p-4 ${
+            notification.type === 'success' 
+              ? 'bg-green-50 border border-green-200' 
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            <div className="flex">
+              <div className="flex-shrink-0">
+                {notification.type === 'success' ? (
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="ml-3">
+                <p className={`text-sm font-medium ${
+                  notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+                }`}>
+                  {notification.message}
+                </p>
+              </div>
+              <div className="ml-auto pl-3">
+                <div className="-mx-1.5 -my-1.5">
+                  <button
+                    onClick={() => setNotification(null)}
+                    className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      notification.type === 'success'
+                        ? 'text-green-500 hover:bg-green-100 focus:ring-green-600'
+                        : 'text-red-500 hover:bg-red-100 focus:ring-red-600'
+                    }`}
+                  >
+                    <span className="sr-only">Cerrar</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
