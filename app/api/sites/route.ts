@@ -75,9 +75,13 @@ export async function POST(request: NextRequest) {
     // Generate unique site_id
     const siteId = uuidv4().replace(/-/g, '').substring(0, 12)
 
-    // Create OneSignal app for this site
+    // Create OneSignal app for this site (REQUIRED for notifications to work)
     let onesignalAppId = null
+    let onesignalError = null
+    
     try {
+      console.log('Creating OneSignal app for:', name, url)
+      
       const onesignalResponse = await fetch('https://onesignal.com/api/v1/apps', {
         method: 'POST',
         headers: {
@@ -94,14 +98,30 @@ export async function POST(request: NextRequest) {
         })
       })
 
+      const responseText = await onesignalResponse.text()
+      console.log('OneSignal response status:', onesignalResponse.status)
+      console.log('OneSignal response:', responseText)
+
       if (onesignalResponse.ok) {
-        const onesignalData = await onesignalResponse.json()
+        const onesignalData = JSON.parse(responseText)
         onesignalAppId = onesignalData.id
+        console.log('OneSignal app created successfully:', onesignalAppId)
       } else {
-        console.error('Failed to create OneSignal app:', await onesignalResponse.text())
+        onesignalError = `OneSignal API error (${onesignalResponse.status}): ${responseText}`
+        console.error('Failed to create OneSignal app:', onesignalError)
       }
     } catch (error) {
-      console.error('Error creating OneSignal app:', error)
+      onesignalError = `OneSignal exception: ${error instanceof Error ? error.message : 'Unknown error'}`
+      console.error('Error creating OneSignal app:', onesignalError)
+    }
+
+    // If OneSignal creation failed, return error (don't create incomplete site)
+    if (!onesignalAppId) {
+      return NextResponse.json({ 
+        error: 'Failed to create OneSignal app for notifications', 
+        details: onesignalError,
+        suggestion: 'Please check OneSignal API credentials and try again'
+      }, { status: 500 })
     }
 
     // Create site in database
