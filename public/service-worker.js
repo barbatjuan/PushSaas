@@ -9,7 +9,7 @@
  */
 
 // Service Worker version
-const SW_VERSION = '2.0.0';
+const SW_VERSION = '2.0.1';
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
