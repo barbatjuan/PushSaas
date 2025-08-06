@@ -177,8 +177,8 @@
       // You can customize this behavior
       console.log('PushSaaS: Ready to show subscription prompt');
       
-      // Uncomment to auto-prompt after 5 seconds
-      // window.PushSaaS.subscribe();
+      // Auto-prompt after 5 seconds
+      window.PushSaaS.subscribe();
     }
   }, 5000);
 
