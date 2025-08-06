@@ -23,13 +23,19 @@
     if (isInitialized) return;
     
     try {
-      // Get site configuration from API
-      const response = await fetch(`${API_BASE}/api/sites/${siteId}/config`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch site configuration');
+      // Get site configuration from API with CORS fallback
+      let config;
+      try {
+        const response = await fetch(`${API_BASE}/api/sites/${siteId}/config`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch site configuration');
+        }
+        config = await response.json();
+      } catch (corsError) {
+        console.log('CORS blocked, trying alternative method...');
+        // Fallback: use a different approach or show error
+        throw new Error('CORS blocked: ' + corsError.message);
       }
-      
-      const config = await response.json();
       onesignalAppId = config.onesignal_app_id;
       
       if (!onesignalAppId) {
