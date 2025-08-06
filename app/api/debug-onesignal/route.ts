@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`
+        'Authorization': `key ${process.env.ONESIGNAL_REST_API_KEY}`
       },
       body: JSON.stringify(testAppData)
     })
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         await fetch(`https://onesignal.com/api/v1/apps/${responseData.id}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`
+            'Authorization': `key ${process.env.ONESIGNAL_REST_API_KEY}`
           }
         })
         console.log('Test app cleaned up')
