@@ -186,6 +186,12 @@
       // Limpia espacios invisibles
       base64String = base64String.trim();
       
+      // Fix: VAPID keys must be exactly 88 characters
+      if (base64String.length === 89) {
+        base64String = base64String.substring(0, 88);
+        console.log('🔧 PushSaaS: Truncated VAPID key from 89 to 88 characters');
+      }
+      
       console.log('🔑 PushSaaS: Converting VAPID key:', base64String.substring(0, 20) + '...', 'Length:', base64String.length);
       
       // Añade padding necesario
