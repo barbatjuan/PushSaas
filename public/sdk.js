@@ -398,13 +398,11 @@
           return;
         }
       }
-      // If iOS and NOT in PWA mode, show PWA prompt and stop
+      // PWA prompt disabled for production - using custom page button instead
       else if (shouldShowPWAPrompt()) {
-        console.log('📱 PushSaaS: iOS detected, showing PWA prompt');
-        createPWAPrompt();
-        // Don't continue with push notification setup until PWA is installed
-        console.log('📱 PushSaaS: Waiting for PWA installation before enabling push notifications');
-        return;
+        console.log('📱 PushSaaS: iOS detected, but PWA prompt disabled for production');
+        console.log('💡 PushSaaS: Use the custom notification button on the website instead');
+        // Continue with normal initialization instead of stopping
       }
       
       // Check if browser supports push notifications
