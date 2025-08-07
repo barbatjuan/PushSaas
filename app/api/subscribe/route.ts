@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (!subscription.endpoint || !subscription.keys) {
       return NextResponse.json(
         { error: 'Invalid subscription format' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (siteError || !site) {
       return NextResponse.json(
         { error: 'Site not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         console.error('❌ Failed to update subscription:', updateError);
         return NextResponse.json(
           { error: 'Failed to update subscription' },
-          { status: 500 }
+          { status: 500, headers: corsHeaders }
         );
       }
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         console.error('❌ Failed to create subscription:', insertError);
         return NextResponse.json(
           { error: 'Failed to create subscription' },
-          { status: 500 }
+          { status: 500, headers: corsHeaders }
         );
       }
 
@@ -141,7 +141,7 @@ export async function DELETE(request: NextRequest) {
     if (!siteId || !endpoint) {
       return NextResponse.json(
         { error: 'Missing required fields: siteId and endpoint' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -159,20 +159,20 @@ export async function DELETE(request: NextRequest) {
       console.error('❌ Failed to unsubscribe:', error);
       return NextResponse.json(
         { error: 'Failed to unsubscribe' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
 
     return NextResponse.json({
       success: true,
       message: 'Unsubscribed successfully'
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error('❌ Unsubscribe endpoint error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
