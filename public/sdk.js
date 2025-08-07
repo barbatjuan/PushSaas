@@ -28,8 +28,14 @@
   
   // IMMEDIATE DEBUG - Show what we detect
   const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'undefined';
+  // Better iOS PWA detection
+  const isInStandaloneMode = window.navigator.standalone === true || 
+                            window.matchMedia('(display-mode: standalone)').matches ||
+                            (window.navigator.standalone !== false && window.outerHeight === window.innerHeight);
+  
+  // Check Notification API availability
+  const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
+  const notificationPermission = hasNotificationAPI ? Notification.permission : 'no-api';
   
   // Use setTimeout to ensure showDebugAlert is defined
   setTimeout(() => {
@@ -76,7 +82,10 @@
   function shouldShowPWAPrompt() {
     const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    // Use improved PWA detection
+    const isInStandaloneMode = window.navigator.standalone === true || 
+                              window.matchMedia('(display-mode: standalone)').matches ||
+                              (window.navigator.standalone !== false && window.outerHeight === window.innerHeight);
     
     console.log('📱 PushSaaS PWA Check:', { isIOS, isSafari, isInStandaloneMode });
     
@@ -275,14 +284,25 @@
     if (isInitialized) return;
     
     try {
-      const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      // Use improved PWA detection
+      const isInStandaloneMode = window.navigator.standalone === true || 
+                                window.matchMedia('(display-mode: standalone)').matches ||
+                                (window.navigator.standalone !== false && window.outerHeight === window.innerHeight);
       const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+      
+      // Check if Notification API is available
+      const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
       
       // If iOS and in PWA mode, proceed with push notifications
       if (isIOS && isInStandaloneMode) {
         console.log('📱 PushSaaS: PWA mode detected, proceeding with push notification setup');
-        // Visual debug for iPhone
         showDebugAlert('📱 PWA Mode Detected! Setting up notifications...', 3000);
+        
+        if (!hasNotificationAPI) {
+          showDebugAlert('❌ Notification API not available in this context', 4000);
+          console.error('❌ PushSaaS: Notification API not available');
+          return;
+        }
       }
       // If iOS and NOT in PWA mode, show PWA prompt and stop
       else if (shouldShowPWAPrompt()) {
