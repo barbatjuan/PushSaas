@@ -105,7 +105,15 @@ self.addEventListener('notificationclick', (event) => {
   const notification = event.notification;
   const data = notification.data || {};
   
-  console.log('📊 PushSaaS SW: Click data:', data);
+  console.log('📊 PushSaaS SW: Full notification object:', {
+    title: notification.title,
+    body: notification.body,
+    data: notification.data,
+    tag: notification.tag
+  });
+  console.log('📊 PushSaaS SW: Click data extracted:', data);
+  console.log('🔑 PushSaaS SW: notificationId found:', data.notificationId || 'MISSING!');
+  console.log('🎯 PushSaaS SW: siteId found:', data.siteId || 'MISSING!');
   
   notification.close();
   
