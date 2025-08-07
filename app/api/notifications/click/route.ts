@@ -15,10 +15,13 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const requestBody = await request.json();
-    const { notification_id, site_id } = requestBody;
+    // Handle both old (notificationId) and new (id) field names for backward compatibility
+    const notification_id = requestBody.notification_id || requestBody.notificationId || requestBody.id;
+    const { site_id } = requestBody;
 
     console.log('📊 Full click request received:', requestBody);
-    console.log('📊 Extracted values:', { notification_id, site_id });
+    console.log('📊 Extracted values (with backward compatibility):', { notification_id, site_id });
+    console.log('🔍 Available fields in request:', Object.keys(requestBody));
 
     if (!notification_id && !site_id) {
       console.log('❌ Missing required fields');
