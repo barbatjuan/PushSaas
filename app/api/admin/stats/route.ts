@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       .map(n => ({
         id: n.id,
         title: n.title,
-        siteName: n.sites?.name || 'Unknown Site',
+        siteName: n.sites?.[0]?.name || 'Unknown Site',
         sentCount: n.sent_count || 0,
         clickedCount: n.clicked_count || 0,
         createdAt: n.created_at
