@@ -29,11 +29,129 @@
   let serviceWorkerRegistration = null;
   let pushSubscription = null;
 
+  // iOS PWA Detection and Prompt Functions
+  function shouldShowPWAPrompt() {
+    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    
+    console.log('📱 PushSaaS PWA Check:', { isIOS, isSafari, isInStandaloneMode });
+    
+    return isIOS && isSafari && !isInStandaloneMode;
+  }
+
+  function createPWAPrompt() {
+    // Check if user has already dismissed the PWA prompt
+    const pwaPromptDismissed = localStorage.getItem('pushsaas-pwa-dismissed');
+    if (pwaPromptDismissed) {
+      console.log('📱 PushSaaS: PWA prompt previously dismissed');
+      return false;
+    }
+
+    const promptHTML = `
+      <div id="pushsaas-pwa-prompt" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 999999;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+      ">
+        <div style="max-width: 400px; margin: 0 auto;">
+          <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">
+            📱 ¡Instala nuestra App!
+          </div>
+          <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9;">
+            Para recibir notificaciones en iPhone, instala esta página como app:
+          </div>
+          <div style="font-size: 13px; margin-bottom: 16px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;">
+            Toca <strong>Compartir</strong> 📤 → <strong>"Agregar a pantalla de inicio"</strong> 📲
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center;">
+            <button id="pushsaas-pwa-got-it" style="
+              background: rgba(255,255,255,0.2);
+              border: 1px solid rgba(255,255,255,0.3);
+              color: white;
+              padding: 8px 16px;
+              border-radius: 20px;
+              font-size: 14px;
+              cursor: pointer;
+              transition: all 0.2s;
+            ">✅ Entendido</button>
+            <button id="pushsaas-pwa-dismiss" style="
+              background: transparent;
+              border: 1px solid rgba(255,255,255,0.3);
+              color: white;
+              padding: 8px 16px;
+              border-radius: 20px;
+              font-size: 14px;
+              cursor: pointer;
+              transition: all 0.2s;
+            ">❌ No mostrar más</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('afterbegin', promptHTML);
+    
+    const prompt = document.getElementById('pushsaas-pwa-prompt');
+    const gotItBtn = document.getElementById('pushsaas-pwa-got-it');
+    const dismissBtn = document.getElementById('pushsaas-pwa-dismiss');
+    
+    // Animate in
+    setTimeout(() => {
+      prompt.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Event listeners
+    gotItBtn.addEventListener('click', () => {
+      prompt.style.transform = 'translateY(-100%)';
+      setTimeout(() => prompt.remove(), 300);
+      console.log('📱 PushSaaS: User acknowledged PWA prompt');
+    });
+    
+    dismissBtn.addEventListener('click', () => {
+      localStorage.setItem('pushsaas-pwa-dismissed', 'true');
+      prompt.style.transform = 'translateY(-100%)';
+      setTimeout(() => prompt.remove(), 300);
+      console.log('📱 PushSaaS: User dismissed PWA prompt permanently');
+    });
+    
+    // Auto-hide after 15 seconds
+    setTimeout(() => {
+      if (document.getElementById('pushsaas-pwa-prompt')) {
+        prompt.style.transform = 'translateY(-100%)';
+        setTimeout(() => prompt.remove(), 300);
+        console.log('📱 PushSaaS: PWA prompt auto-hidden');
+      }
+    }, 15000);
+    
+    console.log('📱 PushSaaS: PWA prompt displayed');
+    return true;
+  }
+
   // Initialize the SDK
   async function init() {
     if (isInitialized) return;
     
     try {
+      // Check for iOS PWA prompt first
+      if (shouldShowPWAPrompt()) {
+        console.log('📱 PushSaaS: iOS detected, showing PWA prompt');
+        createPWAPrompt();
+        // Don't continue with push notification setup until PWA is installed
+        console.log('📱 PushSaaS: Waiting for PWA installation before enabling push notifications');
+        return;
+      }
+      
       // Check if browser supports push notifications
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         throw new Error('Push notifications not supported in this browser');
@@ -340,6 +458,26 @@
     }
   }
 
+  // Function to force initialization (useful when PWA is installed)
+  function forceInit() {
+    console.log('🔄 PushSaaS: Force initializing after PWA installation');
+    isInitialized = false;
+    init();
+  }
+
+  // Check if user returned in PWA mode and auto-initialize
+  function checkPWAModeAndInit() {
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    
+    if (isIOS && isInStandaloneMode) {
+      console.log('📱 PushSaaS: User is in PWA mode, auto-initializing push notifications');
+      setTimeout(() => {
+        forceInit();
+      }, 1000); // Small delay to ensure DOM is ready
+    }
+  }
+
   // Public API
   window.PushSaaS = {
     // Subscribe to push notifications
@@ -383,20 +521,51 @@
     // Get SDK info
     getInfo: function() {
       return {
-        version: '2.0.0',
+        version: '2.1.0',
         siteId: siteId,
         apiBase: apiBase,
         isInitialized: isInitialized,
         hasVapidKey: !!vapidPublicKey,
-        hasServiceWorker: !!serviceWorkerRegistration
+        hasServiceWorker: !!serviceWorkerRegistration,
+        isPWAMode: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true,
+        isIOS: /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())
       };
+    },
+
+    // PWA-related functions
+    pwa: {
+      // Check if should show PWA prompt
+      shouldShowPrompt: shouldShowPWAPrompt,
+      
+      // Manually show PWA prompt
+      showPrompt: function() {
+        if (shouldShowPWAPrompt()) {
+          return createPWAPrompt();
+        } else {
+          console.log('📱 PushSaaS: PWA prompt not needed (not iOS Safari or already in PWA mode)');
+          return false;
+        }
+      },
+      
+      // Force initialization (useful after PWA installation)
+      forceInit: forceInit,
+      
+      // Reset PWA prompt dismissal
+      resetPromptDismissal: function() {
+        localStorage.removeItem('pushsaas-pwa-dismissed');
+        console.log('📱 PushSaaS: PWA prompt dismissal reset');
+      }
     }
   };
 
   // Auto-initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+      checkPWAModeAndInit();
+      init();
+    });
   } else {
+    checkPWAModeAndInit();
     init();
   }
 
