@@ -9,14 +9,14 @@
  */
 
 // Service Worker version for cache busting - FORCE UPDATE
-const SW_VERSION = '2.0.4';
-const CACHE_NAME = 'pushsaas-sw-v2.0.4'; // Added for cache busting
+const SW_VERSION = '2.0.5';
+const CACHE_NAME = 'pushsaas-sw-v2.0.5'; // Added for cache busting
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
 const SITE_ID = urlParams.get('site') || 'c670c8bcd133'; // Default site ID
 
-console.log('🔥 PushSaaS SW: Service Worker v2.0.4 ROBUST DATA MERGE - notificationId FIXED');
+console.log('🔥 PushSaaS SW: Service Worker v2.0.5 - Standardized id field usage');
 console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for site:', SITE_ID);
 console.log('🔧 PushSaaS SW: Enhanced debugging for notificationId tracking!');
 
@@ -79,7 +79,7 @@ self.addEventListener('push', (event) => {
           ...pushData.data
         };
         console.log('📊 PushSaaS SW: Notification data updated (merged):', notificationData.data);
-        console.log('🔑 PushSaaS SW: notificationId confirmed:', notificationData.data.notificationId || 'STILL MISSING!');
+        console.log('🔑 PushSaaS SW: id confirmed:', notificationData.data.id || 'STILL MISSING!');
       }
     } catch (error) {
       console.error('❌ PushSaaS SW: Failed to parse push data:', error);
@@ -123,14 +123,14 @@ self.addEventListener('notificationclick', (event) => {
     tag: notification.tag
   });
   console.log('📊 PushSaaS SW: Click data extracted:', data);
-  console.log('🔑 PushSaaS SW: notificationId found:', data.notificationId || 'MISSING!');
+  console.log('🔑 PushSaaS SW: id found:', data.id || 'MISSING!');
   console.log('🎯 PushSaaS SW: siteId found:', data.siteId || 'MISSING!');
   
   notification.close();
   
   // SIMPLIFIED: Register click immediately
   const clickData = {
-    notification_id: data.notificationId || null,
+    notification_id: data.id || null,
     site_id: data.siteId || SITE_ID,
     timestamp: new Date().toISOString()
   };
