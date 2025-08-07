@@ -83,80 +83,78 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error creating notification' }, { status: 500 })
     }
 
-    // Send notification via OneSignal
-    try {
-      const onesignalPayload = {
-        app_id: site.onesignal_app_id,
-        headings: { en: title.trim() },
-        contents: { en: message.trim() },
-        included_segments: ['All'],
-        ...(url && { url: url.trim() })
-      }
+    // Get all active push subscriptions for this site
+    const { data: pushSubscriptions, error: subscriptionsError } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('subscription_data')
+      .eq('site_id', site.id)
+      .eq('is_active', true)
 
-      const onesignalResponse = await fetch('https://onesignal.com/api/v1/notifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${process.env.ONESIGNAL_REST_API_KEY}`
-        },
-        body: JSON.stringify(onesignalPayload)
-      })
-
-      const onesignalResult = await onesignalResponse.json()
-
-      if (onesignalResponse.ok) {
-        // Update notification with success status
-        const { error: updateError } = await supabaseAdmin
-          .from('notifications')
-          .update({
-            status: 'sent',
-            sent_at: new Date().toISOString(),
-            sent_count: onesignalResult.recipients || subscriberCount,
-            onesignal_notification_id: onesignalResult.id
-          })
-          .eq('id', notification.id)
-
-        if (updateError) {
-          console.error('Error updating notification status:', updateError)
-        }
-
-        return NextResponse.json({
-          message: 'Notification sent successfully',
-          notification: {
-            ...notification,
-            status: 'sent',
-            sent_count: onesignalResult.recipients || subscriberCount,
-            onesignal_notification_id: onesignalResult.id
-          }
-        }, { status: 201 })
-      } else {
-        console.error('OneSignal API error:', onesignalResult)
-        
-        // Update notification with failed status
-        await supabaseAdmin
-          .from('notifications')
-          .update({
-            status: 'failed'
-          })
-          .eq('id', notification.id)
-
-        return NextResponse.json({ 
-          error: `Failed to send notification: ${onesignalResult.errors?.[0] || 'Unknown OneSignal error'}` 
-        }, { status: 500 })
-      }
-    } catch (onesignalError) {
-      console.error('OneSignal request error:', onesignalError)
-      
-      // Update notification with failed status
-      await supabaseAdmin
-        .from('notifications')
-        .update({
-          status: 'failed'
-        })
-        .eq('id', notification.id)
-
-      return NextResponse.json({ error: 'Failed to send notification via OneSignal' }, { status: 500 })
+    if (subscriptionsError) {
+      console.error('Error fetching push subscriptions:', subscriptionsError)
+      return NextResponse.json({ error: 'Error fetching subscriptions' }, { status: 500 })
     }
+
+    if (!pushSubscriptions || pushSubscriptions.length === 0) {
+      return NextResponse.json({ error: 'No active push subscriptions found' }, { status: 400 })
+    }
+
+    // Send notifications using native web-push
+    const webpush = await import('web-push')
+    
+    // Configure VAPID keys
+    webpush.default.setVapidDetails(
+      'mailto:support@pushsaas.com',
+      process.env.VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    )
+
+    const payload = JSON.stringify({
+      title: title.trim(),
+      body: message.trim(),
+      url: url?.trim() || site.url,
+      icon: '/icon-192.png',
+      badge: '/badge-72.png'
+    })
+
+    let sentCount = 0
+    let failedCount = 0
+
+    // Send to all subscriptions
+    const sendPromises = pushSubscriptions.map(async (sub) => {
+      try {
+        await webpush.default.sendNotification(sub.subscription_data, payload)
+        sentCount++
+      } catch (error) {
+        console.error('Failed to send to subscription:', error)
+        failedCount++
+      }
+    })
+
+    await Promise.all(sendPromises)
+
+    // Update notification with results
+    const { error: updateError } = await supabaseAdmin
+      .from('notifications')
+      .update({
+        status: sentCount > 0 ? 'sent' : 'failed',
+        sent_at: new Date().toISOString(),
+        sent_count: sentCount,
+        delivered_count: sentCount // Assume delivered = sent for native push
+      })
+      .eq('id', notification.id)
+
+    if (updateError) {
+      console.error('Error updating notification status:', updateError)
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      notification_id: notification.id,
+      sent_count: sentCount,
+      failed_count: failedCount,
+      total_subscriptions: pushSubscriptions.length
+    })
   } catch (error) {
     console.error('Error in notifications API:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

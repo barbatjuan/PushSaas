@@ -110,10 +110,10 @@ export async function POST(request: NextRequest) {
         subscriptionId: existingSubscription.id
       }, { headers: corsHeaders });
     } else {
-      // Create new subscription
+      // Create or update subscription (UPSERT)
       const { data: newSubscription, error: insertError } = await supabase
         .from('push_subscriptions')
-        .insert({
+        .upsert({
           site_id: siteUUID,
           subscription_hash: subscriptionHash,
           subscription_data: subscription,
@@ -121,6 +121,8 @@ export async function POST(request: NextRequest) {
           created_at: new Date().toISOString(),
           last_seen: new Date().toISOString(),
           is_active: true
+        }, {
+          onConflict: 'site_id,subscription_hash'
         })
         .select('id')
         .single();
