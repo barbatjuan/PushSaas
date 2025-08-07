@@ -51,18 +51,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if site exists
+    console.log('🔍 Checking if site exists:', siteId);
     const { data: site, error: siteError } = await supabase
       .from('sites')
-      .select('id')
-      .eq('id', siteId)
+      .select('site_id')
+      .eq('site_id', siteId)
       .single();
 
+    console.log('📊 Site query result:', { site, siteError });
+    
     if (siteError || !site) {
+      console.log('❌ Site not found in database:', siteId);
+      console.log('❌ Site error details:', siteError);
       return NextResponse.json(
-        { error: 'Site not found' },
+        { error: 'Site not found', siteId: siteId, details: siteError?.message },
         { status: 404, headers: corsHeaders }
       );
     }
+    
+    console.log('✅ Site found:', site);
 
     // Create a unique identifier for this subscription
     const subscriptionHash = Buffer.from(subscription.endpoint).toString('base64').slice(0, 32);
