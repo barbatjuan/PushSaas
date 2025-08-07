@@ -269,9 +269,9 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          site_id: siteId,
+          siteId: siteId,
           subscription: subscription.toJSON(),
-          user_agent: navigator.userAgent,
+          userAgent: navigator.userAgent,
           url: window.location.href,
           timestamp: new Date().toISOString()
         }),
