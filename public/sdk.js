@@ -47,13 +47,16 @@
     }
   }
   
-  // Debug UI disabled for production - only console logging
-  console.log(`📱 PushSaaS Debug: iOS: ${isIOS} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
+  // Device detection for PWA optimization
+  const isAndroid = /Android/.test(navigator.userAgent);
+  const isDesktop = !isIOS && !isAndroid;
   
-  // iOS 18.x PWA Notification API Bug Detection (console only)
-  if (isIOS && isInStandaloneMode && typeof Notification === 'undefined') {
-    console.log('📱 PushSaaS: iOS 18.x PWA bug detected - Notification API blocked in standalone mode');
-    console.log('💡 PushSaaS: Use the custom notification button on the website instead');
+  console.log(`📱 PushSaaS Debug: iOS: ${isIOS} | Android: ${isAndroid} | Desktop: ${isDesktop} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
+  
+  // Focus on Android and Desktop support
+  if (isIOS) {
+    console.log('📱 PushSaaS: iOS detected - push notifications not supported due to Apple restrictions');
+    return; // Exit early for iOS
   }
 
   // State
@@ -92,115 +95,170 @@
     }, duration);
   }
 
-  // iOS PWA Detection and Prompt Functions
-  function shouldShowPWAPrompt() {
-    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    // Use improved PWA detection
-    const isInStandaloneMode = window.navigator.standalone === true || 
-                              window.matchMedia('(display-mode: standalone)').matches ||
-                              (window.navigator.standalone !== false && window.outerHeight === window.innerHeight);
+  // Android PWA Detection and Prompt Functions
+  function shouldShowAndroidPWAPrompt() {
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent);
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
     
-    console.log('📱 PushSaaS PWA Check:', { isIOS, isSafari, isInStandaloneMode });
+    console.log('🤖 PushSaaS Android PWA Check:', { isAndroid, isChrome, isInStandaloneMode });
     
-    return isIOS && isSafari && !isInStandaloneMode;
+    return isAndroid && isChrome && !isInStandaloneMode;
   }
 
-  function createPWAPrompt() {
+  function createAndroidPWAPrompt() {
     // Check if user has already dismissed the PWA prompt
-    const pwaPromptDismissed = localStorage.getItem('pushsaas-pwa-dismissed');
+    const pwaPromptDismissed = localStorage.getItem('pushsaas-android-pwa-dismissed');
     if (pwaPromptDismissed) {
-      console.log('📱 PushSaaS: PWA prompt previously dismissed');
+      console.log('🤖 PushSaaS: Android PWA prompt previously dismissed');
       return false;
     }
 
     const promptHTML = `
-      <div id="pushsaas-pwa-prompt" style="
+      <div id="pushsaas-android-pwa-prompt" style="
         position: fixed;
-        top: 0;
+        bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
         color: white;
-        padding: 16px;
+        padding: 20px;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
         z-index: 999999;
-        transform: translateY(-100%);
+        transform: translateY(100%);
         transition: transform 0.3s ease;
       ">
-        <div style="max-width: 400px; margin: 0 auto;">
-          <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">
-            📱 ¡Instala nuestra App!
+        <div style="max-width: 500px; margin: 0 auto;">
+          <div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">
+            🚀 ¡Instala WebCoders como App!
           </div>
-          <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9;">
-            Para recibir notificaciones en iPhone, instala esta página como app:
+          <div style="font-size: 16px; margin-bottom: 15px; opacity: 0.95;">
+            Acceso rápido, notificaciones push y experiencia nativa en tu Android
           </div>
-          <div style="font-size: 13px; margin-bottom: 16px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;">
-            Toca <strong>Compartir</strong> 📤 → <strong>"Agregar a pantalla de inicio"</strong> 📲
+          <div style="font-size: 14px; margin-bottom: 20px; background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px;">
+            📱 Toca <strong>"Añadir a pantalla de inicio"</strong> en el menú de Chrome
           </div>
-          <div style="display: flex; gap: 8px; justify-content: center;">
-            <button id="pushsaas-pwa-got-it" style="
-              background: rgba(255,255,255,0.2);
-              border: 1px solid rgba(255,255,255,0.3);
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button id="pushsaas-android-install" style="
+              background: rgba(255,255,255,0.9);
+              border: none;
+              color: #4CAF50;
+              padding: 12px 24px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.2s;
+              box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            ">📥 Instalar App</button>
+            <button id="pushsaas-android-later" style="
+              background: transparent;
+              border: 2px solid rgba(255,255,255,0.5);
               color: white;
-              padding: 8px 16px;
-              border-radius: 20px;
+              padding: 10px 20px;
+              border-radius: 25px;
               font-size: 14px;
               cursor: pointer;
               transition: all 0.2s;
-            ">✅ Entendido</button>
-            <button id="pushsaas-pwa-dismiss" style="
+            ">🕒 Más tarde</button>
+            <button id="pushsaas-android-dismiss" style="
               background: transparent;
               border: 1px solid rgba(255,255,255,0.3);
-              color: white;
-              padding: 8px 16px;
-              border-radius: 20px;
+              color: rgba(255,255,255,0.8);
+              padding: 10px 20px;
+              border-radius: 25px;
               font-size: 14px;
               cursor: pointer;
               transition: all 0.2s;
-            ">❌ No mostrar más</button>
+            ">❌ No mostrar</button>
           </div>
         </div>
       </div>
     `;
 
-    document.body.insertAdjacentHTML('afterbegin', promptHTML);
+    document.body.insertAdjacentHTML('beforeend', promptHTML);
     
-    const prompt = document.getElementById('pushsaas-pwa-prompt');
-    const gotItBtn = document.getElementById('pushsaas-pwa-got-it');
-    const dismissBtn = document.getElementById('pushsaas-pwa-dismiss');
+    const prompt = document.getElementById('pushsaas-android-pwa-prompt');
+    const installBtn = document.getElementById('pushsaas-android-install');
+    const laterBtn = document.getElementById('pushsaas-android-later');
+    const dismissBtn = document.getElementById('pushsaas-android-dismiss');
     
-    // Animate in
+    // Show prompt with animation
     setTimeout(() => {
       prompt.style.transform = 'translateY(0)';
     }, 100);
     
-    // Event listeners
-    gotItBtn.addEventListener('click', () => {
-      prompt.style.transform = 'translateY(-100%)';
-      setTimeout(() => prompt.remove(), 300);
-      console.log('📱 PushSaaS: User acknowledged PWA prompt');
+    // Store the beforeinstallprompt event
+    let deferredPrompt = null;
+    
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('🤖 PushSaaS: beforeinstallprompt event fired');
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Update install button to show it's ready
+      installBtn.innerHTML = '🚀 Instalar Ahora';
+      installBtn.style.background = 'rgba(255,255,255,1)';
+    });
+    
+    // Event handlers
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        console.log('🤖 PushSaaS: Showing install prompt');
+        deferredPrompt.prompt();
+        
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`🤖 PushSaaS: User choice: ${outcome}`);
+        
+        if (outcome === 'accepted') {
+          console.log('🎉 PushSaaS: PWA installed successfully!');
+        }
+        
+        deferredPrompt = null;
+      } else {
+        // Fallback: show manual instructions
+        alert('📱 Para instalar:\n\n1. Toca el menú de Chrome (⋮)\n2. Selecciona "Añadir a pantalla de inicio"\n3. Confirma la instalación\n\n¡Después podrás recibir notificaciones!');
+      }
+      
+      // Hide prompt
+      prompt.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        prompt.remove();
+      }, 300);
+    });
+    
+    laterBtn.addEventListener('click', () => {
+      console.log('🤖 PushSaaS: User chose "later" for PWA install');
+      prompt.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        prompt.remove();
+      }, 300);
     });
     
     dismissBtn.addEventListener('click', () => {
-      localStorage.setItem('pushsaas-pwa-dismissed', 'true');
-      prompt.style.transform = 'translateY(-100%)';
-      setTimeout(() => prompt.remove(), 300);
-      console.log('📱 PushSaaS: User dismissed PWA prompt permanently');
+      console.log('🤖 PushSaaS: User dismissed Android PWA prompt permanently');
+      localStorage.setItem('pushsaas-android-pwa-dismissed', 'true');
+      prompt.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        prompt.remove();
+      }, 300);
     });
     
-    // Auto-hide after 15 seconds
+    // Auto-hide after 20 seconds
     setTimeout(() => {
-      if (document.getElementById('pushsaas-pwa-prompt')) {
-        prompt.style.transform = 'translateY(-100%)';
-        setTimeout(() => prompt.remove(), 300);
-        console.log('📱 PushSaaS: PWA prompt auto-hidden');
+      if (document.getElementById('pushsaas-android-pwa-prompt')) {
+        console.log('🤖 PushSaaS: Android PWA prompt auto-hidden after 20s');
+        prompt.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+          prompt.remove();
+        }, 300);
       }
-    }, 15000);
+    }, 20000);
     
-    console.log('📱 PushSaaS: PWA prompt displayed');
+    console.log('🤖 PushSaaS: Android PWA installation prompt shown');
     return true;
   }
 
@@ -382,27 +440,15 @@
       const isInStandaloneMode = window.navigator.standalone === true || 
                                 window.matchMedia('(display-mode: standalone)').matches ||
                                 (window.navigator.standalone !== false && window.outerHeight === window.innerHeight);
-      const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
       
       // Check if Notification API is available
       const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
       
-      // If iOS and in PWA mode, proceed with push notifications
-      if (isIOS && isInStandaloneMode) {
-        console.log('📱 PushSaaS: PWA mode detected, proceeding with push notification setup');
-        showDebugAlert('📱 PWA Mode Detected! Setting up notifications...', 3000);
-        
-        if (!hasNotificationAPI) {
-          showDebugAlert('❌ Notification API not available in this context', 4000);
-          console.error('❌ PushSaaS: Notification API not available');
-          return;
-        }
-      }
-      // PWA prompt disabled for production - using custom page button instead
-      else if (shouldShowPWAPrompt()) {
-        console.log('📱 PushSaaS: iOS detected, but PWA prompt disabled for production');
-        console.log('💡 PushSaaS: Use the custom notification button on the website instead');
-        // Continue with normal initialization instead of stopping
+      // Check for Android PWA installation prompt
+      if (shouldShowAndroidPWAPrompt()) {
+        console.log('🤖 PushSaaS: Showing Android PWA installation prompt');
+        createAndroidPWAPrompt();
+        // Continue with notification setup even if PWA prompt is shown
       }
       
       // Check if browser supports push notifications
@@ -422,19 +468,12 @@
       isInitialized = true;
       console.log('✅ PushSaaS SDK: Initialized successfully');
       
-      // If iOS and PWA mode, show notification activation button (iOS requires user gesture)
-      if (isIOS && isInStandaloneMode && Notification.permission === 'default') {
-        console.log('📱 PushSaaS: PWA mode - showing notification activation button');
-        showDebugAlert('✅ SDK Ready! Showing notification button...', 3000);
-        createNotificationActivationButton();
-      } else if (isIOS && isInStandaloneMode && Notification.permission === 'granted') {
-        showDebugAlert('✅ SDK Ready! Notifications already enabled', 3000);
-        // Auto-subscribe if permission already granted
+      // For Android and Desktop: Auto-subscribe if permission already granted
+      if (Notification.permission === 'granted') {
+        console.log('✅ PushSaaS: Permission already granted, auto-subscribing');
         setTimeout(async () => {
           await window.PushSaaS.subscribe();
         }, 1000);
-      } else if (isIOS && isInStandaloneMode) {
-        showDebugAlert('✅ SDK Ready! Permission: ' + Notification.permission, 3000);
       }
       
     } catch (error) {
