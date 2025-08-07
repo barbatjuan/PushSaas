@@ -24,12 +24,12 @@ export default async function HomePage() {
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/sign-up">
-              <Button className="px-8 py-3 h-11">
+              <Button className="px-8 py-3 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                 Comenzar Gratis
               </Button>
             </Link>
             <Link href="/sign-in">
-              <Button className="px-8 py-3 h-11 border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+              <Button variant="outline" className="px-8 py-3 h-11 border-2 border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white transition-all duration-200 font-semibold">
                 Iniciar Sesión
               </Button>
             </Link>
@@ -95,7 +95,7 @@ export default async function HomePage() {
                     <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                       <span className="text-white text-xs">✓</span>
                     </span>
-                    Hasta 500 suscriptores
+                    Hasta 2 suscriptores
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
@@ -117,7 +117,7 @@ export default async function HomePage() {
               <CardHeader>
                 <CardTitle>Plan Pro</CardTitle>
                 <CardDescription>Para negocios en crecimiento</CardDescription>
-                <div className="text-3xl font-bold">$29<span className="text-sm font-normal">/mes</span></div>
+                <div className="text-3xl font-bold">€19<span className="text-sm font-normal">/mes</span></div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm">
