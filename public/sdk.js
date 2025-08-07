@@ -23,9 +23,7 @@
 
   console.log('🚀 PushSaaS SDK: Initializing for site:', siteId);
   
-  // IMMEDIATE ALERT - Before anything else
-  alert('🚀 PushSaaS SDK Loading...');
-  
+  // Debug alerts disabled for production
   // IMMEDIATE DEBUG - Show what we detect
   const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   // Better iOS PWA detection
@@ -49,22 +47,14 @@
     }
   }
   
-  // Use setTimeout to ensure showDebugAlert is defined
-  setTimeout(() => {
-    showDebugAlert(`📱 iOS: ${isIOS} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`, 5000);
-    
-    // iOS 18.x PWA Notification API Bug Detection
-    if (isIOS && isInStandaloneMode && typeof Notification === 'undefined') {
-      setTimeout(() => {
-        showIOS18PWAWorkaround();
-      }, 2000);
-    } else if (isIOS) {
-      // EMERGENCY: Show manual notification test button if iOS and API available
-      setTimeout(() => {
-        showEmergencyNotificationButton();
-      }, 2000);
-    }
-  }, 100);
+  // Debug UI disabled for production - only console logging
+  console.log(`📱 PushSaaS Debug: iOS: ${isIOS} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
+  
+  // iOS 18.x PWA Notification API Bug Detection (console only)
+  if (isIOS && isInStandaloneMode && typeof Notification === 'undefined') {
+    console.log('📱 PushSaaS: iOS 18.x PWA bug detected - Notification API blocked in standalone mode');
+    console.log('💡 PushSaaS: Use the custom notification button on the website instead');
+  }
 
   // State
   let isInitialized = false;
