@@ -133,9 +133,6 @@ self.addEventListener('notificationclick', (event) => {
     }
   };
   
-  // Register click (don't wait for it)
-  registerClick();
-  
   const urlToOpen = data.url || self.location.origin;
   
   // Open or focus the app
@@ -152,14 +149,18 @@ self.addEventListener('notificationclick', (event) => {
     }
     
     if (clients.openWindow) {
-      console.log('🆕 PushSaaS: Opening new window');
+      console.log('🌐 PushSaaS: Opening new window');
       return clients.openWindow(urlToOpen);
     }
   }).catch((error) => {
     console.error('❌ PushSaaS: Failed to handle notification click:', error);
   });
   
-  event.waitUntil(promiseChain);
+  // IMPORTANT: Wait for both the window opening AND the click registration
+  event.waitUntil(Promise.all([
+    promiseChain,
+    registerClick()
+  ]));
 });
 
 // Error handlers
