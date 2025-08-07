@@ -9,14 +9,14 @@
  */
 
 // Service Worker version for cache busting - FORCE UPDATE
-const SW_VERSION = '2.1.0';
-const CACHE_NAME = 'pushsaas-sw-v2.1.0'; // Added for cache busting
+const SW_VERSION = '2.2.0';
+const CACHE_NAME = 'pushsaas-sw-v2.2.0'; // Added for cache busting
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
 const SITE_ID = urlParams.get('site') || 'c670c8bcd133'; // Default site ID
 
-console.log('🔥 PushSaaS SW: Service Worker v2.1.0 - FORCE UPDATE - id field standardized');
+console.log('🔥 PushSaaS SW: Service Worker v2.2.0 - FINAL FIX - id field standardized');
 console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for site:', SITE_ID);
 console.log('🔧 PushSaaS SW: Enhanced debugging for notificationId tracking!');
 
@@ -100,7 +100,7 @@ self.addEventListener('push', (event) => {
 
   // Show notification
   console.log('🚀 PushSaaS SW: Final notification data before showing:', notificationData.data);
-  console.log('🔑 PushSaaS SW: Final notificationId check:', notificationData.data.notificationId || 'STILL MISSING!');
+  console.log('🔑 PushSaaS SW: Final id check:', notificationData.data.id || 'STILL MISSING!');
   
   const promiseChain = self.registration.showNotification(
     notificationData.title,
@@ -121,7 +121,7 @@ self.addEventListener('push', (event) => {
 
 // Notification click event - UPDATED VERSION
 self.addEventListener('notificationclick', (event) => {
-  console.log('🔥 PushSaaS SW: Notification clicked - v1.0.6 FORCE UPDATE');
+  console.log('🔥 PushSaaS SW: Notification clicked - v2.2.0 FINAL FIX');
   
   const notification = event.notification;
   const data = notification.data || {};

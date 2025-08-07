@@ -143,8 +143,15 @@
     if (isInitialized) return;
     
     try {
-      // Check for iOS PWA prompt first
-      if (shouldShowPWAPrompt()) {
+      const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+      
+      // If iOS and in PWA mode, proceed with push notifications
+      if (isIOS && isInStandaloneMode) {
+        console.log('📱 PushSaaS: PWA mode detected, proceeding with push notification setup');
+      }
+      // If iOS and NOT in PWA mode, show PWA prompt and stop
+      else if (shouldShowPWAPrompt()) {
         console.log('📱 PushSaaS: iOS detected, showing PWA prompt');
         createPWAPrompt();
         // Don't continue with push notification setup until PWA is installed
@@ -168,6 +175,14 @@
       
       isInitialized = true;
       console.log('✅ PushSaaS SDK: Initialized successfully');
+      
+      // If iOS and PWA mode, auto-prompt for notifications after initialization
+      if (isIOS && isInStandaloneMode && Notification.permission === 'default') {
+        console.log('📱 PushSaaS: PWA mode - auto-prompting for notifications');
+        setTimeout(async () => {
+          await window.PushSaaS.subscribe();
+        }, 2000); // Small delay to ensure everything is ready
+      }
       
     } catch (error) {
       console.error('❌ PushSaaS SDK: Initialization failed:', error);
@@ -560,12 +575,8 @@
 
   // Auto-initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      checkPWAModeAndInit();
-      init();
-    });
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    checkPWAModeAndInit();
     init();
   }
 
