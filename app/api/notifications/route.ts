@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       badge: '/badge-72.png',
       data: {
         siteId: site.site_id,
-        notificationId: notification.id,
+        id: notification.id,
         url: url?.trim() || site.url,
         timestamp: new Date().toISOString()
       }
