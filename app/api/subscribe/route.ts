@@ -16,6 +16,8 @@ const corsHeaders = {
 
 // Handle preflight OPTIONS request
 export async function OPTIONS(request: NextRequest) {
+  console.log('🔧 OPTIONS request received at /api/subscribe');
+  console.log('📍 Request URL:', request.url);
   return new Response(null, {
     status: 200,
     headers: corsHeaders,
@@ -23,8 +25,13 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🚀 Recibiendo suscripción en backend - POST /api/subscribe');
+  console.log('📍 Request URL:', request.url);
+  console.log('🌐 Request headers:', Object.fromEntries(request.headers.entries()));
+  
   try {
     const body = await request.json();
+    console.log('📦 Request body:', body);
     const { siteId, subscription, userAgent, timestamp } = body;
 
     // Validate required fields
