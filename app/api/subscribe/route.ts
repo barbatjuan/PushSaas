@@ -139,13 +139,15 @@ export async function POST(request: NextRequest) {
       console.log('📊 Inserting into subscribers table for compatibility');
       const { error: subscribersError } = await supabase
         .from('subscribers')
-        .insert({
+        .upsert({
           site_id: siteId, // Use the original string siteId, not UUID
           token: subscription.endpoint, // Use endpoint as token for uniqueness
           user_agent: userAgent,
           subscribed_at: new Date().toISOString(),
           last_seen: new Date().toISOString(),
           is_active: true
+        }, {
+          onConflict: 'site_id,token'
         });
 
       if (subscribersError) {
