@@ -53,8 +53,13 @@
   setTimeout(() => {
     showDebugAlert(`📱 iOS: ${isIOS} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`, 5000);
     
-    // EMERGENCY: Show manual notification test button if iOS
-    if (isIOS) {
+    // iOS 18.x PWA Notification API Bug Detection
+    if (isIOS && isInStandaloneMode && typeof Notification === 'undefined') {
+      setTimeout(() => {
+        showIOS18PWAWorkaround();
+      }, 2000);
+    } else if (isIOS) {
+      // EMERGENCY: Show manual notification test button if iOS and API available
       setTimeout(() => {
         showEmergencyNotificationButton();
       }, 2000);
