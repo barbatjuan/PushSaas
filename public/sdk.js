@@ -263,7 +263,20 @@
   // Sync subscription with backend
   async function syncSubscriptionWithBackend(subscription) {
     try {
-      const response = await fetch(`${apiBase}/api/subscribe`, {
+      // Add cache-busting parameter
+      const cacheBuster = Date.now();
+      const url = `${apiBase}/api/subscribe?v=${cacheBuster}`;
+      
+      console.log('🔄 PushSaaS: Syncing subscription to:', url);
+      console.log('📦 PushSaaS: Payload:', {
+        siteId: siteId,
+        subscription: subscription.toJSON(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        timestamp: new Date().toISOString()
+      });
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
