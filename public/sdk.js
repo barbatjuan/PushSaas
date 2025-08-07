@@ -22,6 +22,19 @@
   }
 
   console.log('🚀 PushSaaS SDK: Initializing for site:', siteId);
+  
+  // IMMEDIATE ALERT - Before anything else
+  alert('🚀 PushSaaS SDK Loading...');
+  
+  // IMMEDIATE DEBUG - Show what we detect
+  const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'undefined';
+  
+  // Use setTimeout to ensure showDebugAlert is defined
+  setTimeout(() => {
+    showDebugAlert(`📱 iOS: ${isIOS} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`, 5000);
+  }, 100);
 
   // State
   let isInitialized = false;
