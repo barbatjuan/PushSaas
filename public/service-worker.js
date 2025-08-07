@@ -9,22 +9,32 @@
  */
 
 // Service Worker version for cache busting - FORCE UPDATE
-const SW_VERSION = '2.0.5';
-const CACHE_NAME = 'pushsaas-sw-v2.0.5'; // Added for cache busting
+const SW_VERSION = '2.1.0';
+const CACHE_NAME = 'pushsaas-sw-v2.1.0'; // Added for cache busting
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
 const SITE_ID = urlParams.get('site') || 'c670c8bcd133'; // Default site ID
 
-console.log('🔥 PushSaaS SW: Service Worker v2.0.5 - Standardized id field usage');
+console.log('🔥 PushSaaS SW: Service Worker v2.1.0 - FORCE UPDATE - id field standardized');
 console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for site:', SITE_ID);
 console.log('🔧 PushSaaS SW: Enhanced debugging for notificationId tracking!');
 
 // Install event - FORCE UPDATE
 self.addEventListener('install', (event) => {
   console.log('🔥 PushSaaS SW: FORCE INSTALLING service worker version', SW_VERSION);
+  console.log('🚀 PushSaaS SW: AGGRESSIVE UPDATE - Clearing all caches');
   // Skip waiting to activate immediately and avoid subscription interruption
-  event.waitUntil(self.skipWaiting());
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+      );
+    }).then(() => {
+      console.log('🧹 PushSaaS SW: All caches cleared, forcing update');
+      return self.skipWaiting();
+    })
+  );
 });
 
 // Activate event
