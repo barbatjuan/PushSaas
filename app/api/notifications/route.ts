@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       title: title.trim(),
       body: message.trim(),
       url: url?.trim() || site.url,
-      icon: '/icon-192.png',
+      icon: site.logo_url || '/icon-192.png',
       badge: '/badge-72.png'
     })
 

@@ -12,7 +12,7 @@ const supabase = createClient(
 interface CreateSiteRequest {
   name: string;
   url: string;
-  icon_url?: string;
+  logo_url?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body: CreateSiteRequest = await request.json();
-    const { name, url, icon_url } = body;
+    const { name, url, logo_url } = body;
 
     // Validate required fields
     if (!name || !url) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const { app: onesignalApp, isValid } = await oneSignalAutomation.createAndConfigureApp({
       name,
       url,
-      icon_url,
+      logo_url,
     });
 
     if (!isValid) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         name,
         url,
-        icon_url,
+        logo_url,
         onesignal_app_id: onesignalApp.id,
         onesignal_rest_api_key: onesignalApp.basic_auth_key,
         is_active: true,

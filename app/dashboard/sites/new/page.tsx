@@ -16,7 +16,7 @@ export default function NewSitePage() {
   const [formData, setFormData] = useState({
     name: '',
     url: '',
-    icon_url: ''
+    logo_url: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -41,7 +41,7 @@ export default function NewSitePage() {
         body: JSON.stringify({
           name: formData.name.trim(),
           url: formData.url.trim(),
-          icon_url: formData.icon_url.trim() || undefined,
+          logo_url: formData.logo_url.trim() || undefined,
         }),
       })
 
@@ -153,17 +153,17 @@ export default function NewSitePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="icon_url">Ícono de Notificaciones (Opcional)</Label>
+                <Label htmlFor="logo_url">Logo de la Empresa (Opcional)</Label>
                 <Input
-                  id="icon_url"
-                  name="icon_url"
+                  id="logo_url"
+                  name="logo_url"
                   type="url"
-                  placeholder="https://mitienda.com/icon.png"
-                  value={formData.icon_url}
+                  placeholder="https://mitienda.com/logo.png"
+                  value={formData.logo_url}
                   onChange={handleChange}
                 />
                 <p className="text-sm text-gray-500">
-                  URL del ícono que aparecerá en las notificaciones push (recomendado: 192x192px).
+                  URL del logo de tu empresa que aparecerá en las notificaciones push (recomendado: 192x192px).
                 </p>
               </div>
 

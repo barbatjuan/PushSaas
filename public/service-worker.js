@@ -95,6 +95,36 @@ self.addEventListener('notificationclick', (event) => {
   
   notification.close();
   
+  // Register click with backend for statistics
+  const registerClick = async () => {
+    try {
+      console.log('📊 PushSaaS: Registering click for site:', data.siteId);
+      
+      const response = await fetch('https://web-push-notifications-phi.vercel.app/api/notifications/click', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notification_id: data.notificationId || null,
+          site_id: data.siteId || SITE_ID,
+          timestamp: new Date().toISOString()
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ PushSaaS: Click registered successfully');
+      } else {
+        console.warn('⚠️ PushSaaS: Failed to register click:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ PushSaaS: Error registering click:', error);
+    }
+  };
+  
+  // Register click (don't wait for it)
+  registerClick();
+  
   const urlToOpen = data.url || self.location.origin;
   
   // Open or focus the app

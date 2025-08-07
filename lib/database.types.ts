@@ -49,6 +49,7 @@ export interface Database {
           url: string
           site_id: string
           onesignal_app_id: string | null
+          logo_url: string | null
           status: 'active' | 'suspended'
           expires_at: string | null
           subscriber_count: number
@@ -62,6 +63,7 @@ export interface Database {
           url: string
           site_id: string
           onesignal_app_id?: string | null
+          logo_url?: string | null
           status?: 'active' | 'suspended'
           expires_at?: string | null
           subscriber_count?: number
@@ -75,6 +77,7 @@ export interface Database {
           url?: string
           site_id?: string
           onesignal_app_id?: string | null
+          logo_url?: string | null
           status?: 'active' | 'suspended'
           expires_at?: string | null
           subscriber_count?: number
