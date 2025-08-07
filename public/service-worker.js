@@ -10,11 +10,13 @@
 
 // Service Worker version
 const SW_VERSION = '2.0.1';
+const CACHE_NAME = 'pushsaas-sw-v1.0.4'; // Added for cache busting
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
 const SITE_ID = urlParams.get('site') || 'unknown';
 
+console.log('🔄 PushSaaS SW: Service Worker v1.0.4 loaded - Click tracking enabled');
 console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for site:', SITE_ID);
 
 // Install event
@@ -92,12 +94,15 @@ self.addEventListener('push', (event) => {
 
 // Notification click event
 self.addEventListener('notificationclick', (event) => {
-  console.log('👆 PushSaaS SW: Notification clicked');
+  console.log('👆 PushSaaS SW: Notification clicked - v1.0.4');
+  console.log('🔧 PushSaaS SW: Event object:', event);
   
   const notification = event.notification;
   const data = notification.data || {};
   
+  console.log('📊 PushSaaS SW: Full notification object:', notification);
   console.log('📊 PushSaaS SW: Notification data received:', data);
+  console.log('📊 PushSaaS SW: Data type:', typeof data, 'Keys:', Object.keys(data));
   
   notification.close();
   
