@@ -8,20 +8,21 @@
  * 3. Make sure it's accessible at: https://yoursite.com/service-worker.js
  */
 
-// Service Worker version for cache busting - CLICK TRACKING FIXED
-const SW_VERSION = '2.0.1';
-const CACHE_NAME = 'pushsaas-sw-v1.0.5'; // Added for cache busting
+// Service Worker version for cache busting - FORCE UPDATE
+const SW_VERSION = '2.0.2';
+const CACHE_NAME = 'pushsaas-sw-v1.0.6'; // Added for cache busting
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
 const SITE_ID = urlParams.get('site') || 'c670c8bcd133'; // Default site ID
 
-console.log('🔄 PushSaaS SW: Service Worker v1.0.5 loaded - Click tracking FIXED');
+console.log('🔥 PushSaaS SW: Service Worker v1.0.6 FORCE UPDATED - Click tracking ACTIVE');
 console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for site:', SITE_ID);
+console.log('🔧 PushSaaS SW: This is the NEW service worker with click tracking!');
 
-// Install event
+// Install event - FORCE UPDATE
 self.addEventListener('install', (event) => {
-  console.log('🔧 PushSaaS SW: Installing service worker version', SW_VERSION);
+  console.log('🔥 PushSaaS SW: FORCE INSTALLING service worker version', SW_VERSION);
   // Skip waiting to activate immediately and avoid subscription interruption
   event.waitUntil(self.skipWaiting());
 });
@@ -98,9 +99,9 @@ self.addEventListener('push', (event) => {
   event.waitUntil(promiseChain);
 });
 
-// Notification click event
+// Notification click event - UPDATED VERSION
 self.addEventListener('notificationclick', (event) => {
-  console.log('👆 PushSaaS SW: Notification clicked - v1.0.5');
+  console.log('🔥 PushSaaS SW: Notification clicked - v1.0.6 FORCE UPDATE');
   
   const notification = event.notification;
   const data = notification.data || {};
