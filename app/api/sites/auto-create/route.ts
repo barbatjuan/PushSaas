@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
-import { oneSignalAutomation } from '@/lib/onesignal-automation';
 import { v4 as uuidv4 } from 'uuid';
 
 const supabase = createClient(
@@ -47,35 +46,20 @@ export async function POST(request: NextRequest) {
 
     console.log('🚀 Starting automated site creation:', { name, url });
 
-    // Step 1: Create OneSignal app automatically
-    const { app: onesignalApp, isValid } = await oneSignalAutomation.createAndConfigureApp({
-      name,
-      url,
-      logo_url,
-    });
-
-    if (!isValid) {
-      console.warn('⚠️ OneSignal setup validation failed, but continuing...');
-    }
-
-    // Step 2: Generate unique site ID
+    // Generate unique site ID
     const siteId = uuidv4().replace(/-/g, '').substring(0, 12);
 
-    // Step 3: Save to database
+    // Save to database
     const { data: site, error: dbError } = await supabase
       .from('sites')
       .insert({
-        id: siteId,
         user_id: userId,
         name,
         url,
+        site_id: siteId,
         logo_url,
-        onesignal_app_id: onesignalApp.id,
-        onesignal_rest_api_key: onesignalApp.basic_auth_key,
-        is_active: true,
-        setup_completed: isValid,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        status: 'active',
+        subscriber_count: 0
       })
       .select()
       .single();
@@ -104,8 +88,8 @@ if (!function_exists('add_pushsaas_notifications')) {
 
     console.log('✅ Site created successfully:', {
       siteId,
-      onesignalAppId: onesignalApp.id,
-      setupCompleted: isValid,
+      name,
+      url
     });
 
     // Return complete setup information
@@ -115,9 +99,8 @@ if (!function_exists('add_pushsaas_notifications')) {
         id: siteId,
         name,
         url,
-        icon_url,
-        onesignal_app_id: onesignalApp.id,
-        setup_completed: isValid,
+        logo_url,
+        site_id: siteId,
         created_at: site.created_at,
       },
       integration: {
@@ -130,10 +113,8 @@ if (!function_exists('add_pushsaas_notifications')) {
         },
       },
       automation_status: {
-        onesignal_created: true,
         web_push_configured: true,
-        validation_passed: isValid,
-        ready_to_use: isValid,
+        ready_to_use: true,
       },
     });
 

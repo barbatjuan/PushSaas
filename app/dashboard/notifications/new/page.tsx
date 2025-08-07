@@ -20,7 +20,7 @@ export default function NewNotificationPage() {
   const { user, loading, isPaid } = useCurrentUser()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const preselectedSiteId = searchParams.get('site')
+  const preselectedSiteId = searchParams?.get('site')
 
   const [sites, setSites] = useState<Site[]>([])
   const [loadingSites, setLoadingSites] = useState(true)
