@@ -14,9 +14,14 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { notification_id, site_id } = await request.json();
+    const requestBody = await request.json();
+    const { notification_id, site_id } = requestBody;
+
+    console.log('📊 Full click request received:', requestBody);
+    console.log('📊 Extracted values:', { notification_id, site_id });
 
     if (!notification_id && !site_id) {
+      console.log('❌ Missing required fields');
       return NextResponse.json(
         { error: 'notification_id or site_id is required' },
         { status: 400, headers: corsHeaders }
@@ -27,22 +32,37 @@ export async function POST(request: NextRequest) {
 
     // If we have notification_id, update that specific notification
     if (notification_id) {
+      console.log('🔍 Looking for notification with ID:', notification_id);
+      
       // First get current count, then increment
       const { data: currentNotification, error: fetchError } = await supabaseAdmin
         .from('notifications')
-        .select('clicked_count')
+        .select('id, clicked_count, title')
         .eq('id', notification_id)
         .single();
 
       if (fetchError) {
-        console.error('Error fetching current notification:', fetchError);
+        console.error('❌ Error fetching notification:', fetchError);
+        console.log('🔍 Trying to find any notifications for debugging...');
+        
+        // Debug: List recent notifications
+        const { data: recentNotifications } = await supabaseAdmin
+          .from('notifications')
+          .select('id, title, created_at')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        console.log('📊 Recent notifications:', recentNotifications);
+        
         return NextResponse.json(
-          { error: 'Failed to fetch notification' },
-          { status: 500, headers: corsHeaders }
+          { error: 'Notification not found', notification_id, recent_notifications: recentNotifications },
+          { status: 404, headers: corsHeaders }
         );
       }
 
+      console.log('✅ Found notification:', currentNotification);
       const newClickCount = (currentNotification.clicked_count || 0) + 1;
+      console.log('🔢 Updating click count from', currentNotification.clicked_count, 'to', newClickCount);
 
       const { error: updateError } = await supabaseAdmin
         .from('notifications')
@@ -52,12 +72,14 @@ export async function POST(request: NextRequest) {
         .eq('id', notification_id);
 
       if (updateError) {
-        console.error('Error updating notification click count:', updateError);
+        console.error('❌ Error updating notification click count:', updateError);
         return NextResponse.json(
-          { error: 'Failed to register click' },
+          { error: 'Failed to update click count', details: updateError },
           { status: 500, headers: corsHeaders }
         );
       }
+      
+      console.log('✅ Successfully updated click count to', newClickCount);
     }
 
     // If we have site_id, we can also track general site engagement

@@ -97,6 +97,8 @@ self.addEventListener('notificationclick', (event) => {
   const notification = event.notification;
   const data = notification.data || {};
   
+  console.log('📊 PushSaaS SW: Notification data received:', data);
+  
   notification.close();
   
   // Register click with backend for statistics

@@ -116,10 +116,13 @@ export async function POST(request: NextRequest) {
       url: site.url
     });
 
-    const iconUrl = site.logo_url || '/icon-192.png';
-    console.log('🎨 Using icon URL:', iconUrl);
+    // Use processed logo with standard size and background
+    const iconUrl = site.logo_url 
+      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://web-push-notifications-phi.vercel.app'}/api/logo?url=${encodeURIComponent(site.logo_url)}&size=192`
+      : '/icon-192.png';
+    console.log('🎨 Using processed icon URL:', iconUrl);
 
-    const payload = JSON.stringify({
+    const notificationData = {
       title: title.trim(),
       body: message.trim(),
       url: url?.trim() || site.url,
@@ -128,9 +131,12 @@ export async function POST(request: NextRequest) {
       data: {
         siteId: site.site_id,
         notificationId: notification.id,
+        url: url?.trim() || site.url,
         timestamp: new Date().toISOString()
       }
-    });
+    };
+
+    const payload = JSON.stringify(notificationData);
 
     console.log('📦 Notification payload:', payload);
 
@@ -138,12 +144,25 @@ export async function POST(request: NextRequest) {
     let failedCount = 0
 
     // Send to all subscriptions
-    const sendPromises = pushSubscriptions.map(async (sub) => {
+    const sendPromises = pushSubscriptions.map(async (sub, index) => {
       try {
+        console.log(`📤 Sending notification ${index + 1}/${pushSubscriptions.length}`);
         await webpush.default.sendNotification(sub.subscription_data, payload)
         sentCount++
-      } catch (error) {
-        console.error('Failed to send to subscription:', error)
+        console.log(`✅ Notification ${index + 1} sent successfully`);
+      } catch (error: any) {
+        console.error(`❌ Failed to send notification ${index + 1}:`, error);
+        
+        // Handle specific error codes
+        if (error.statusCode === 410) {
+          console.log('🗑️ Subscription expired/revoked, should be cleaned up');
+          // TODO: Mark subscription as inactive in database
+        } else if (error.statusCode === 413) {
+          console.log('📦 Payload too large');
+        } else if (error.statusCode === 429) {
+          console.log('⏰ Rate limited');
+        }
+        
         failedCount++
       }
     })
