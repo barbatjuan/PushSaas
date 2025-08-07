@@ -133,6 +133,26 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Also insert into subscribers table for compatibility with existing counter system
+      console.log('📊 Inserting into subscribers table for compatibility');
+      const { error: subscribersError } = await supabase
+        .from('subscribers')
+        .insert({
+          site_id: siteId, // Use the original string siteId, not UUID
+          token: subscription.endpoint, // Use endpoint as token for uniqueness
+          user_agent: userAgent,
+          subscribed_at: new Date().toISOString(),
+          last_seen: new Date().toISOString(),
+          is_active: true
+        });
+
+      if (subscribersError) {
+        console.error('⚠️ Failed to insert into subscribers table:', subscribersError);
+        // Don't fail the request, the triggers will handle the count automatically
+      } else {
+        console.log('✅ Successfully inserted into subscribers table - triggers will update count');
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Subscription created successfully',
