@@ -29,6 +29,36 @@
   let serviceWorkerRegistration = null;
   let pushSubscription = null;
 
+  // Visual debug function for iPhone (no console access)
+  function showDebugAlert(message, duration = 3000) {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 999999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      max-width: 90%;
+      text-align: center;
+    `;
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+      if (alertDiv.parentNode) {
+        alertDiv.remove();
+      }
+    }, duration);
+  }
+
   // iOS PWA Detection and Prompt Functions
   function shouldShowPWAPrompt() {
     const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
@@ -138,6 +168,95 @@
     return true;
   }
 
+  // Create notification activation button for iOS PWA mode
+  function createNotificationActivationButton() {
+    // Check if button already exists
+    if (document.getElementById('pushsaas-notification-button')) {
+      return;
+    }
+
+    const buttonHTML = `
+      <div id="pushsaas-notification-button" style="
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999999;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      ">
+        <button id="pushsaas-activate-notifications" style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 16px 24px;
+          border-radius: 25px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        ">
+          🔔 Activar Notificaciones
+        </button>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', buttonHTML);
+    
+    const button = document.getElementById('pushsaas-activate-notifications');
+    
+    // Add hover effect
+    button.addEventListener('mousedown', () => {
+      button.style.transform = 'scale(0.95)';
+    });
+    
+    button.addEventListener('mouseup', () => {
+      button.style.transform = 'scale(1)';
+    });
+    
+    // Main click handler - THIS IS THE USER GESTURE iOS REQUIRES
+    button.addEventListener('click', async () => {
+      console.log('🔔 PushSaaS: User clicked notification activation button');
+      showDebugAlert('🔔 Requesting notification permission...', 2000);
+      
+      try {
+        // Request permission with user gesture
+        const permission = await Notification.requestPermission();
+        console.log('🔔 PushSaaS: Permission result:', permission);
+        
+        if (permission === 'granted') {
+          showDebugAlert('✅ Permission granted! Setting up notifications...', 3000);
+          
+          // Remove the button
+          document.getElementById('pushsaas-notification-button').remove();
+          
+          // Subscribe to push notifications
+          setTimeout(async () => {
+            const success = await window.PushSaaS.subscribe();
+            if (success) {
+              showDebugAlert('🎉 Notifications activated successfully!', 4000);
+            } else {
+              showDebugAlert('❌ Failed to activate notifications', 3000);
+            }
+          }, 500);
+          
+        } else {
+          showDebugAlert('❌ Permission denied. You can enable it later in Settings.', 4000);
+          // Keep the button visible in case user changes their mind
+        }
+        
+      } catch (error) {
+        console.error('❌ PushSaaS: Error requesting permission:', error);
+        showDebugAlert('❌ Error requesting permission: ' + error.message, 4000);
+      }
+    });
+    
+    console.log('🔔 PushSaaS: Notification activation button created');
+  }
+
   // Initialize the SDK
   async function init() {
     if (isInitialized) return;
@@ -149,6 +268,8 @@
       // If iOS and in PWA mode, proceed with push notifications
       if (isIOS && isInStandaloneMode) {
         console.log('📱 PushSaaS: PWA mode detected, proceeding with push notification setup');
+        // Visual debug for iPhone
+        showDebugAlert('📱 PWA Mode Detected! Setting up notifications...', 3000);
       }
       // If iOS and NOT in PWA mode, show PWA prompt and stop
       else if (shouldShowPWAPrompt()) {
@@ -176,12 +297,19 @@
       isInitialized = true;
       console.log('✅ PushSaaS SDK: Initialized successfully');
       
-      // If iOS and PWA mode, auto-prompt for notifications after initialization
+      // If iOS and PWA mode, show notification activation button (iOS requires user gesture)
       if (isIOS && isInStandaloneMode && Notification.permission === 'default') {
-        console.log('📱 PushSaaS: PWA mode - auto-prompting for notifications');
+        console.log('📱 PushSaaS: PWA mode - showing notification activation button');
+        showDebugAlert('✅ SDK Ready! Showing notification button...', 3000);
+        createNotificationActivationButton();
+      } else if (isIOS && isInStandaloneMode && Notification.permission === 'granted') {
+        showDebugAlert('✅ SDK Ready! Notifications already enabled', 3000);
+        // Auto-subscribe if permission already granted
         setTimeout(async () => {
           await window.PushSaaS.subscribe();
-        }, 2000); // Small delay to ensure everything is ready
+        }, 1000);
+      } else if (isIOS && isInStandaloneMode) {
+        showDebugAlert('✅ SDK Ready! Permission: ' + Notification.permission, 3000);
       }
       
     } catch (error) {
