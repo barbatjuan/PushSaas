@@ -8,15 +8,15 @@
  * 3. Make sure it's accessible at: https://yoursite.com/service-worker.js
  */
 
-// Service Worker version
+// Service Worker version for cache busting - CLICK TRACKING FIXED
 const SW_VERSION = '2.0.1';
-const CACHE_NAME = 'pushsaas-sw-v1.0.4'; // Added for cache busting
+const CACHE_NAME = 'pushsaas-sw-v1.0.5'; // Added for cache busting
 
 // Get site ID from URL parameters (passed by SDK)
 const urlParams = new URLSearchParams(self.location.search);
-const SITE_ID = urlParams.get('site') || 'unknown';
+const SITE_ID = urlParams.get('site') || 'c670c8bcd133'; // Default site ID
 
-console.log('🔄 PushSaaS SW: Service Worker v1.0.4 loaded - Click tracking enabled');
+console.log('🔄 PushSaaS SW: Service Worker v1.0.5 loaded - Click tracking FIXED');
 console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for site:', SITE_ID);
 
 // Install event
@@ -100,78 +100,61 @@ self.addEventListener('push', (event) => {
 
 // Notification click event
 self.addEventListener('notificationclick', (event) => {
-  console.log('👆 PushSaaS SW: Notification clicked - v1.0.4');
-  console.log('🔧 PushSaaS SW: Event object:', event);
+  console.log('👆 PushSaaS SW: Notification clicked - v1.0.5');
   
   const notification = event.notification;
   const data = notification.data || {};
   
-  console.log('📊 PushSaaS SW: Full notification object:', notification);
-  console.log('📊 PushSaaS SW: Notification data received:', data);
-  console.log('📊 PushSaaS SW: Data type:', typeof data, 'Keys:', Object.keys(data));
+  console.log('📊 PushSaaS SW: Click data:', data);
   
   notification.close();
   
-  // Register click with backend for statistics
-  const registerClick = async () => {
-    try {
-      const clickData = {
-        notification_id: data.notificationId || null,
-        site_id: data.siteId || SITE_ID,
-        timestamp: new Date().toISOString()
-      };
-      
-      console.log('📊 PushSaaS: Registering click with data:', clickData);
-      
-      const response = await fetch('https://web-push-notifications-phi.vercel.app/api/notifications/click', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(clickData)
-      });
-      
-      const responseData = await response.text();
-      console.log('📊 PushSaaS: Click response:', response.status, responseData);
-      
-      if (response.ok) {
-        console.log('✅ PushSaaS: Click registered successfully');
-      } else {
-        console.warn('⚠️ PushSaaS: Failed to register click:', response.status, responseData);
-      }
-    } catch (error) {
-      console.error('❌ PushSaaS: Error registering click:', error);
-    }
+  // SIMPLIFIED: Register click immediately
+  const clickData = {
+    notification_id: data.notificationId || null,
+    site_id: data.siteId || SITE_ID,
+    timestamp: new Date().toISOString()
   };
+  
+  console.log('🚀 PushSaaS SW: Sending click data:', clickData);
+  
+  // Send click tracking request
+  const trackClick = fetch('https://web-push-notifications-phi.vercel.app/api/notifications/click', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(clickData)
+  }).then(response => {
+    console.log('✅ PushSaaS SW: Click tracked, status:', response.status);
+    return response.text();
+  }).then(data => {
+    console.log('📊 PushSaaS SW: Click response:', data);
+  }).catch(error => {
+    console.error('❌ PushSaaS SW: Click tracking failed:', error);
+  });
   
   const urlToOpen = data.url || self.location.origin;
   
   // Open or focus the app
-  const promiseChain = clients.matchAll({
+  const openWindow = clients.matchAll({
     type: 'window',
     includeUncontrolled: true
   }).then((clientList) => {
     for (let i = 0; i < clientList.length; i++) {
       const client = clientList[i];
       if (client.url === urlToOpen && 'focus' in client) {
-        console.log('🔍 PushSaaS: Focusing existing window');
+        console.log('🔍 PushSaaS SW: Focusing existing window');
         return client.focus();
       }
     }
     
-    if (clients.openWindow) {
-      console.log('🌐 PushSaaS: Opening new window');
-      return clients.openWindow(urlToOpen);
-    }
-  }).catch((error) => {
-    console.error('❌ PushSaaS: Failed to handle notification click:', error);
+    console.log('🌐 PushSaaS SW: Opening new window');
+    return clients.openWindow(urlToOpen);
+  }).catch(error => {
+    console.error('❌ PushSaaS SW: Error opening window:', error);
   });
   
-  // IMPORTANT: Wait for both the window opening AND the click registration
-  event.waitUntil(Promise.all([
-    promiseChain,
-    registerClick()
-  ]));
+  // CRITICAL: Wait for both operations
+  event.waitUntil(Promise.all([openWindow, trackClick]));
 });
 
 // Error handlers
