@@ -51,21 +51,25 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const pushData = event.data.json();
-      console.log('📨 PushSaaS: Push data received:', pushData);
+      console.log('📦 PushSaaS SW: Received push data:', pushData);
       
-      // Merge with default data
-      notificationData = {
-        ...notificationData,
-        ...pushData,
-        data: {
-          ...notificationData.data,
-          ...(pushData.data || {})
-        }
-      };
+      if (pushData.title) notificationData.title = pushData.title;
+      if (pushData.body) notificationData.body = pushData.body;
+      if (pushData.icon) {
+        notificationData.icon = pushData.icon;
+        console.log('🎨 PushSaaS SW: Using custom icon:', pushData.icon);
+      }
+      if (pushData.badge) notificationData.badge = pushData.badge;
+      if (pushData.url) notificationData.data.url = pushData.url;
+      if (pushData.data) {
+        notificationData.data = { ...notificationData.data, ...pushData.data };
+        console.log('📊 PushSaaS SW: Notification data updated:', notificationData.data);
+      }
     } catch (error) {
-      console.error('❌ PushSaaS: Failed to parse push data:', error);
-      notificationData.body = event.data.text() || notificationData.body;
+      console.error('❌ PushSaaS SW: Failed to parse push data:', error);
     }
+  } else {
+    console.log('⚠️ PushSaaS SW: No push data received');
   }
 
   // Show notification
@@ -98,24 +102,29 @@ self.addEventListener('notificationclick', (event) => {
   // Register click with backend for statistics
   const registerClick = async () => {
     try {
-      console.log('📊 PushSaaS: Registering click for site:', data.siteId);
+      const clickData = {
+        notification_id: data.notificationId || null,
+        site_id: data.siteId || SITE_ID,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('📊 PushSaaS: Registering click with data:', clickData);
       
       const response = await fetch('https://web-push-notifications-phi.vercel.app/api/notifications/click', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          notification_id: data.notificationId || null,
-          site_id: data.siteId || SITE_ID,
-          timestamp: new Date().toISOString()
-        })
+        body: JSON.stringify(clickData)
       });
+      
+      const responseData = await response.text();
+      console.log('📊 PushSaaS: Click response:', response.status, responseData);
       
       if (response.ok) {
         console.log('✅ PushSaaS: Click registered successfully');
       } else {
-        console.warn('⚠️ PushSaaS: Failed to register click:', response.status);
+        console.warn('⚠️ PushSaaS: Failed to register click:', response.status, responseData);
       }
     } catch (error) {
       console.error('❌ PushSaaS: Error registering click:', error);

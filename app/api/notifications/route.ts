@@ -109,13 +109,30 @@ export async function POST(request: NextRequest) {
       process.env.VAPID_PRIVATE_KEY!
     )
 
+    console.log('🖼️ Site data for notification:', {
+      site_id: site.site_id,
+      name: site.name,
+      logo_url: site.logo_url,
+      url: site.url
+    });
+
+    const iconUrl = site.logo_url || '/icon-192.png';
+    console.log('🎨 Using icon URL:', iconUrl);
+
     const payload = JSON.stringify({
       title: title.trim(),
       body: message.trim(),
       url: url?.trim() || site.url,
-      icon: site.logo_url || '/icon-192.png',
-      badge: '/badge-72.png'
-    })
+      icon: iconUrl,
+      badge: '/badge-72.png',
+      data: {
+        siteId: site.site_id,
+        notificationId: notification.id,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    console.log('📦 Notification payload:', payload);
 
     let sentCount = 0
     let failedCount = 0
