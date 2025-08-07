@@ -86,21 +86,22 @@
     try {
       console.log('🔧 PushSaaS: Registering Service Worker...');
       
-      // Try physical file first - FORCE NEW VERSION
-      const swVersion = 'v2.2.0';
-      const swUrl = `/service-worker.js?site=${siteId}&v=${swVersion}&t=${Date.now()}`;
-      console.log('🔥 PushSaaS: Trying FORCE UPDATED service worker v2.2.0:', swUrl);
-      serviceWorkerRegistration = await navigator.serviceWorker.register(swUrl, {
-        scope: '/',
-        updateViaCache: 'none' // Force no cache
-      });
+      // Try physical file first (best performance)
+      let swUrl = `/service-worker.js?site=${siteId}`;
+      console.log('📡 PushSaaS: Trying physical file:', swUrl);
+      
+      try {
+        const registration = await navigator.serviceWorker.register(swUrl, {
+          scope: '/'
+        });
         
-      console.log('👷 PushSaaS: Service Worker registered successfully (physical file)');
+        serviceWorkerRegistration = registration;
+        console.log('👷 PushSaaS: Service Worker registered successfully (physical file)');
         
-      // Wait for service worker to be ready
-      await navigator.serviceWorker.ready;
-      console.log('✅ PushSaaS: Service Worker ready');
-      return;
+        // Wait for service worker to be ready
+        await navigator.serviceWorker.ready;
+        console.log('✅ PushSaaS: Service Worker ready');
+        return;
         
       } catch (physicalFileError) {
         console.log('🔄 PushSaaS: Physical file not found, trying dynamic fallback...');
