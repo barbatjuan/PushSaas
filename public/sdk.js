@@ -241,12 +241,19 @@
 
       console.log('✅ PushSaaS: Permission granted');
 
-      // Subscribe to push manager
-      pushSubscription = await serviceWorkerRegistration.pushManager.subscribe({
-        userVisibleOnly: true,
+      // Subscribe to push manager with persistent configuration
+      const subscription = await serviceWorkerRegistration.pushManager.subscribe({
+        userVisibleOnly: true, // Required for persistent subscriptions
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
       });
+      
+      console.log('🔐 PushSaaS: Subscription created with endpoint:', subscription.endpoint);
+      console.log('🔑 PushSaaS: Subscription keys:', {
+        p256dh: subscription.keys.p256dh ? 'present' : 'missing',
+        auth: subscription.keys.auth ? 'present' : 'missing'
+      });
 
+      pushSubscription = subscription;
       console.log('📱 PushSaaS: Push subscription created');
 
       // Send subscription to backend

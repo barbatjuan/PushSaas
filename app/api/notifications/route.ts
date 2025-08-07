@@ -155,8 +155,23 @@ export async function POST(request: NextRequest) {
         
         // Handle specific error codes
         if (error.statusCode === 410) {
-          console.log('🗑️ Subscription expired/revoked, should be cleaned up');
-          // TODO: Mark subscription as inactive in database
+          console.log('🗑️ Subscription expired/revoked, cleaning up from database');
+          
+          // Remove expired subscription from database
+          try {
+            const { error: deleteError } = await supabaseAdmin
+              .from('push_subscriptions')
+              .delete()
+              .eq('subscription_data', JSON.stringify(sub.subscription_data));
+            
+            if (deleteError) {
+              console.error('❌ Failed to delete expired subscription:', deleteError);
+            } else {
+              console.log('✅ Expired subscription removed from database');
+            }
+          } catch (cleanupError) {
+            console.error('❌ Error during subscription cleanup:', cleanupError);
+          }
         } else if (error.statusCode === 413) {
           console.log('📦 Payload too large');
         } else if (error.statusCode === 429) {

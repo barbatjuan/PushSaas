@@ -21,14 +21,20 @@ console.log('🚀 PushSaaS Service Worker: Loaded version', SW_VERSION, 'for sit
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('🔧 PushSaaS SW: Installing version', SW_VERSION);
-  self.skipWaiting();
+  console.log('🔧 PushSaaS SW: Installing service worker version', SW_VERSION);
+  // Skip waiting to activate immediately and avoid subscription interruption
+  event.waitUntil(self.skipWaiting());
 });
 
 // Activate event
 self.addEventListener('activate', (event) => {
-  console.log('✅ PushSaaS SW: Activated version', SW_VERSION);
-  event.waitUntil(self.clients.claim());
+  console.log('✅ PushSaaS SW: Service worker activated');
+  // Claim all clients immediately to maintain subscription continuity
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      console.log('👍 PushSaaS SW: All clients claimed, subscriptions maintained');
+    })
+  );
 });
 
 // Push event - Handle incoming push notifications
