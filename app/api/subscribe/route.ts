@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if site exists
+    // Check if site exists and get its UUID
     console.log('🔍 Checking if site exists:', siteId);
     const { data: site, error: siteError } = await supabase
       .from('sites')
-      .select('site_id')
+      .select('id, site_id')
       .eq('site_id', siteId)
       .single();
 
@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('✅ Site found:', site);
+    const siteUUID = site.id; // Use the actual UUID from the sites table
+    console.log('🎯 Using site UUID:', siteUUID);
 
     // Create a unique identifier for this subscription
     const subscriptionHash = Buffer.from(subscription.endpoint).toString('base64').slice(0, 32);
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
     const { data: existingSubscription } = await supabase
       .from('push_subscriptions')
       .select('id')
-      .eq('site_id', siteId)
+      .eq('site_id', siteUUID)
       .eq('subscription_hash', subscriptionHash)
       .single();
 
@@ -112,7 +114,7 @@ export async function POST(request: NextRequest) {
       const { data: newSubscription, error: insertError } = await supabase
         .from('push_subscriptions')
         .insert({
-          site_id: siteId,
+          site_id: siteUUID,
           subscription_hash: subscriptionHash,
           subscription_data: subscription,
           user_agent: userAgent,
