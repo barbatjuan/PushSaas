@@ -159,8 +159,8 @@ export default function NewNotificationPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Nueva Notificación</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-[#c0caf5] dark:via-[#7aa2f7] dark:to-[#bb9af7] bg-clip-text text-transparent">Nueva Notificación</h1>
+          <p className="text-gray-600 dark:text-[#a9b1d6] mt-2">
             Envía una notificación push a los suscriptores de tu sitio.
           </p>
         </div>

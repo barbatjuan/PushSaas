@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     const userPlan = userData?.plan || 'free'
-    const maxSubscribers = userPlan === 'paid' ? 10000 : 2
+    const maxSubscribers = userPlan === 'paid' ? 10000 : 20
 
     if (site.subscriber_count >= maxSubscribers) {
       return NextResponse.json({ error: 'Subscriber limit reached for this plan' }, { status: 400 })

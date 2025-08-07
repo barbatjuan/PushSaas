@@ -23,10 +23,12 @@
 
   console.log('🚀 PushSaaS SDK: Initializing for site:', siteId);
   
-  // Debug alerts disabled for production
-  // IMMEDIATE DEBUG - Show what we detect
-  const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-  // Better iOS PWA detection
+  // Enhanced device detection - Support ALL devices
+  const isAndroid = /Android/.test(navigator.userAgent);
+  const isDesktop = !/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isMobile = !isDesktop;
+  
+  // Better PWA detection for all devices
   const isInStandaloneMode = window.navigator.standalone === true || 
                             window.matchMedia('(display-mode: standalone)').matches ||
                             (window.navigator.standalone !== false && window.outerHeight === window.innerHeight);
@@ -35,29 +37,16 @@
   const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
   const notificationPermission = hasNotificationAPI ? Notification.permission : 'no-api';
   
-  // EMERGENCY: Force PWA detection for testing
-  if (isIOS) {
-    // Try to force PWA mode detection
-    const forceStandalone = window.location.search.includes('standalone=true') || 
-                           window.navigator.standalone === true ||
-                           window.matchMedia('(display-mode: standalone)').matches;
-    
-    if (forceStandalone) {
-      showDebugAlert('🔴 EMERGENCY: Forcing PWA mode for testing', 3000);
-    }
+  console.log(`📱 PushSaaS Debug: Android: ${isAndroid} | Desktop: ${isDesktop} | Mobile: ${isMobile} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
+  
+  // Check if notifications are supported
+  if (!hasNotificationAPI) {
+    console.log('❌ PushSaaS: Notification API not supported in this browser');
+    showDebugAlert('❌ Tu navegador no soporta notificaciones push', 5000);
+    return;
   }
   
-  // Device detection for PWA optimization
-  const isAndroid = /Android/.test(navigator.userAgent);
-  const isDesktop = !isIOS && !isAndroid;
-  
-  console.log(`📱 PushSaaS Debug: iOS: ${isIOS} | Android: ${isAndroid} | Desktop: ${isDesktop} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
-  
-  // Focus on Android and Desktop support
-  if (isIOS) {
-    console.log('📱 PushSaaS: iOS detected - push notifications not supported due to Apple restrictions');
-    return; // Exit early for iOS
-  }
+  console.log('✅ PushSaaS: Notification API available, proceeding with initialization');
 
   // State
   let isInitialized = false;

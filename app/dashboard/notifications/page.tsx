@@ -106,8 +106,8 @@ export default function NotificationsPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Notificaciones</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-[#c0caf5] dark:via-[#7aa2f7] dark:to-[#bb9af7] bg-clip-text text-transparent">Notificaciones</h1>
+          <p className="text-gray-600 dark:text-[#a9b1d6] mt-2">
             Historial de todas las notificaciones enviadas a tus suscriptores.
           </p>
         </div>
@@ -123,7 +123,7 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando notificaciones...</p>
+            <p className="mt-2 text-gray-600 dark:text-[#a9b1d6]">Cargando notificaciones...</p>
           </div>
         </div>
       ) : notifications.length === 0 ? (
@@ -146,7 +146,7 @@ export default function NotificationsPage() {
       ) : (
         <div className="space-y-4">
           {notifications.map((notification) => (
-            <Card key={notification.id}>
+            <Card key={notification.id} className="border-0 bg-white/80 dark:bg-[#24283b]/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200/50 dark:border-[#414868]/30">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -157,7 +157,7 @@ export default function NotificationsPage() {
                     <CardDescription className="mt-1">
                       {notification.message}
                     </CardDescription>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-[#9aa5ce]">
                       <span>Sitio: {notification.sites?.name}</span>
                       <span>•</span>
                       <span>{formatDate(notification.created_at)}</span>
@@ -172,10 +172,10 @@ export default function NotificationsPage() {
                   <div className="text-right">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       notification.status === 'sent' 
-                        ? 'bg-green-100 text-green-800' 
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700/50' 
                         : notification.status === 'failed'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700/50'
+                        : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700/50'
                     }`}>
                       {getStatusText(notification.status)}
                     </span>
@@ -185,34 +185,34 @@ export default function NotificationsPage() {
               <CardContent>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-[#7aa2f7]">
                       {notification.sent_count}
                     </div>
-                    <div className="text-sm text-gray-500">Enviados</div>
+                    <div className="text-sm text-gray-500 dark:text-[#9aa5ce]">Enviados</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-green-600 dark:text-[#9ece6a]">
                       {notification.delivered_count}
                     </div>
-                    <div className="text-sm text-gray-500">Entregados</div>
+                    <div className="text-sm text-gray-500 dark:text-[#9aa5ce]">Entregados</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-[#bb9af7]">
                       {notification.clicked_count}
                     </div>
-                    <div className="text-sm text-gray-500">Clics</div>
+                    <div className="text-sm text-gray-500 dark:text-[#9aa5ce]">Clics</div>
                   </div>
                 </div>
 
                 {notification.url && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                    <p className="text-sm text-gray-600">
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-[#414868]/20 rounded-md">
+                    <p className="text-sm text-gray-600 dark:text-[#9aa5ce]">
                       <strong>URL de destino:</strong>{' '}
                       <a 
                         href={notification.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="text-blue-600 dark:text-[#7aa2f7] hover:underline"
                       >
                         {notification.url}
                       </a>

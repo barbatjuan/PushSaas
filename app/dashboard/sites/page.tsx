@@ -90,16 +90,18 @@ export default function SitesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mis Sitios</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-[#c0caf5] dark:via-[#7aa2f7] dark:to-[#bb9af7] bg-clip-text text-transparent">
+            Mis Sitios
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-[#a9b1d6] mt-2">
             Gestiona tus sitios web y obtén los códigos de integración.
           </p>
         </div>
         <Link href="/dashboard/sites/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 group">
+            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
             Agregar Sitio
           </Button>
         </Link>
@@ -109,7 +111,7 @@ export default function SitesPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando sitios...</p>
+            <p className="mt-2 text-gray-600 dark:text-[#a9b1d6]">Cargando sitios...</p>
           </div>
         </div>
       ) : sites.length === 0 ? (
@@ -132,7 +134,7 @@ export default function SitesPage() {
       ) : (
         <div className="grid gap-6">
           {sites.map((site) => (
-            <Card key={site.id}>
+            <Card key={site.id} className="border-0 bg-white/80 dark:bg-[#24283b]/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200/50 dark:border-[#414868]/30">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -140,8 +142,8 @@ export default function SitesPage() {
                       {site.name}
                       <span className={`text-xs px-2 py-1 rounded-full ${
                         site.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700/50' 
+                          : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700/50'
                       }`}>
                         {site.status === 'active' ? 'Activo' : 'Suspendido'}
                       </span>
@@ -152,7 +154,7 @@ export default function SitesPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
                       <Users className="h-4 w-4" />
                       {site.subscriber_count} suscriptores
                     </div>
@@ -161,34 +163,43 @@ export default function SitesPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Código de integración:
                   </label>
                   <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 p-2 bg-gray-100 rounded text-sm font-mono">
+                    <code className="flex-1 p-2 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded text-sm font-mono border border-gray-200 dark:border-gray-600">
                       {getScriptTag(site.site_id)}
                     </code>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(getScriptTag(site.site_id))}
+                      className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Copia este código y pégalo en el &lt;head&gt; de tu sitio web.
                   </p>
                 </div>
 
                 <div className="flex gap-2">
                   <Link href={`/dashboard/notifications/new?site=${site.id}`}>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                    >
                       Enviar Notificación
                     </Button>
                   </Link>
                   <Link href={`/dashboard/sites/${site.id}/settings`}>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+                    >
                       <Settings className="mr-1 h-3 w-3" />
                       Configurar
                     </Button>
@@ -198,7 +209,7 @@ export default function SitesPage() {
                     size="sm"
                     onClick={() => confirmDelete(site.site_id, site.name)}
                     disabled={deletingSite === site.site_id}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="border-red-300 dark:border-red-600 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-400 dark:hover:border-red-500 disabled:opacity-50"
                   >
                     <Trash2 className="mr-1 h-3 w-3" />
                     {deletingSite === site.site_id ? 'Eliminando...' : 'Eliminar'}
