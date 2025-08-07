@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background cuadrado -->
+  <rect width="512" height="512" fill="#667eea" rx="50"/>
+  
+  <!-- Texto WebCoders -->
+  <text x="256" y="180" font-family="Arial, sans-serif" font-size="64" font-weight="bold" text-anchor="middle" fill="white">WebCoders</text>
+  
+  <!-- Icono de código más grande -->
+  <g transform="translate(256, 320)">
+    <!-- Brackets de código -->
+    <path d="M-80,-40 L-100,-10 L-100,10 L-80,40" stroke="white" stroke-width="8" fill="none"/>
+    <path d="M80,-40 L100,-10 L100,10 L80,40" stroke="white" stroke-width="8" fill="none"/>
+    
+    <!-- Slash del medio -->
+    <line x1="-25" y1="-40" x2="25" y2="40" stroke="white" stroke-width="8"/>
+  </g>
+  
+  <!-- Puntos decorativos -->
+  <circle cx="120" cy="120" r="8" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="392" cy="120" r="8" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="120" cy="392" r="8" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="392" cy="392" r="8" fill="rgba(255,255,255,0.3)"/>
+  
+  <!-- Elementos adicionales para 512x512 -->
+  <circle cx="256" cy="80" r="12" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="256" cy="432" r="12" fill="rgba(255,255,255,0.2)"/>
+</svg>

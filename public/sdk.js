@@ -37,9 +37,28 @@
   const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
   const notificationPermission = hasNotificationAPI ? Notification.permission : 'no-api';
   
+  // EMERGENCY: Force PWA detection for testing
+  if (isIOS) {
+    // Try to force PWA mode detection
+    const forceStandalone = window.location.search.includes('standalone=true') || 
+                           window.navigator.standalone === true ||
+                           window.matchMedia('(display-mode: standalone)').matches;
+    
+    if (forceStandalone) {
+      showDebugAlert('🔴 EMERGENCY: Forcing PWA mode for testing', 3000);
+    }
+  }
+  
   // Use setTimeout to ensure showDebugAlert is defined
   setTimeout(() => {
     showDebugAlert(`📱 iOS: ${isIOS} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`, 5000);
+    
+    // EMERGENCY: Show manual notification test button if iOS
+    if (isIOS) {
+      setTimeout(() => {
+        showEmergencyNotificationButton();
+      }, 2000);
+    }
   }, 100);
 
   // State
@@ -277,6 +296,86 @@
     });
     
     console.log('🔔 PushSaaS: Notification activation button created');
+  }
+
+  // EMERGENCY: Manual notification test button (bypasses PWA detection)
+  function showEmergencyNotificationButton() {
+    // Check if button already exists
+    if (document.getElementById('pushsaas-emergency-button')) {
+      return;
+    }
+
+    const buttonHTML = `
+      <div id="pushsaas-emergency-button" style="
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999999;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      ">
+        <button id="pushsaas-emergency-test" style="
+          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+          color: white;
+          border: none;
+          padding: 12px 20px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+          transition: all 0.3s ease;
+        ">
+          🆘 EMERGENCY: Test Notifications
+        </button>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', buttonHTML);
+    
+    const button = document.getElementById('pushsaas-emergency-test');
+    
+    // Emergency click handler - DIRECT NOTIFICATION TEST
+    button.addEventListener('click', async () => {
+      console.log('🆘 EMERGENCY: Testing notification permission directly');
+      showDebugAlert('🆘 EMERGENCY: Testing notification API...', 2000);
+      
+      try {
+        // Check if Notification API exists
+        if (!('Notification' in window)) {
+          showDebugAlert('❌ Notification API not available in this browser/context', 4000);
+          return;
+        }
+        
+        // Try to request permission directly
+        const permission = await Notification.requestPermission();
+        console.log('🆘 EMERGENCY: Permission result:', permission);
+        
+        if (permission === 'granted') {
+          showDebugAlert('✅ EMERGENCY: Permission granted! API is available!', 4000);
+          
+          // Try to show a test notification
+          try {
+            new Notification('Test from WebCoders PWA', {
+              body: 'If you see this, notifications work!',
+              icon: '/logoNegro.png'
+            });
+            showDebugAlert('🎉 EMERGENCY: Test notification sent!', 4000);
+          } catch (notifError) {
+            showDebugAlert('❌ Error creating notification: ' + notifError.message, 4000);
+          }
+          
+        } else {
+          showDebugAlert('❌ EMERGENCY: Permission denied: ' + permission, 4000);
+        }
+        
+      } catch (error) {
+        console.error('❌ EMERGENCY: Error:', error);
+        showDebugAlert('❌ EMERGENCY: Error: ' + error.message, 4000);
+      }
+    });
+    
+    console.log('🆘 EMERGENCY: Emergency notification test button created');
   }
 
   // Initialize the SDK
