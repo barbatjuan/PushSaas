@@ -774,6 +774,27 @@
     }
   }
 
+  // PWA Helper Functions
+  function shouldShowPWAPrompt() {
+    // Check if we're on iOS Safari (where PWA prompts are useful)
+    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isSafari = /safari/.test(window.navigator.userAgent.toLowerCase()) && !/chrome/.test(window.navigator.userAgent.toLowerCase());
+    const isInStandaloneMode = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    
+    // Show prompt if iOS Safari and not already in PWA mode
+    return isIOS && isSafari && !isInStandaloneMode;
+  }
+  
+  function createPWAPrompt() {
+    console.log('📱 PushSaaS: Creating PWA installation prompt');
+    
+    // Simple PWA prompt for iOS Safari
+    const promptText = 'Para recibir notificaciones, instala esta app:\n\n1. Toca el botón Compartir\n2. Selecciona "Añadir a pantalla de inicio"';
+    alert(promptText);
+    
+    return true;
+  }
+
   // Public API
   window.PushSaaS = {
     // Subscribe to push notifications
