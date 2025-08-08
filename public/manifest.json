@@ -1,11 +1,11 @@
 {
-  "name": "WebCoders - Desarrollo Web",
-  "short_name": "WebCoders",
-  "description": "Servicios profesionales de desarrollo web y aplicaciones",
+  "name": "PushSaaS - Notificaciones Push",
+  "short_name": "PushSaaS",
+  "description": "Plataforma SaaS de notificaciones push web para negocios pequeños. Recupera clientes que visitaron tu sitio pero no compraron.",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#1a1b23",
   "theme_color": "#667eea",
   "orientation": "portrait-primary",
   "scope": "/",
@@ -23,7 +23,37 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity"],
+  "categories": ["business", "productivity", "utilities"],
   "lang": "es",
-  "dir": "ltr"
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Acceder al panel de control",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Enviar Notificación",
+      "short_name": "Enviar",
+      "description": "Enviar nueva notificación",
+      "url": "/dashboard/notifications/new",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "gcm_sender_id": "103953800507"
 }

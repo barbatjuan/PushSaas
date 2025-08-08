@@ -3,7 +3,7 @@
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Bell, BarChart3, Settings, Plus, Home, Zap, Users, TrendingUp, Moon, Sun } from 'lucide-react'
+import { Bell, BarChart3, Settings, Plus, Home, Zap, Users, TrendingUp, Moon, Sun, Wrench } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
@@ -57,9 +57,15 @@ export default function DashboardLayout({
     },
     {
       name: 'Métricas',
-      href: '/dashboard/analytics',
+      href: '/dashboard/metrics',
       icon: TrendingUp,
-      current: pathname?.startsWith('/dashboard/analytics') || false
+      current: pathname?.startsWith('/dashboard/metrics') || false
+    },
+    {
+      name: 'Diagnóstico PWA',
+      href: '/dashboard/diagnostics',
+      icon: Wrench,
+      current: pathname?.startsWith('/dashboard/diagnostics') || false
     }
   ]
 
