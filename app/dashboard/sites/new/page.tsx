@@ -32,8 +32,8 @@ export default function NewSitePage() {
     setAutomationResult(null)
 
     try {
-      // Use the new automated endpoint
-      const response = await fetch('/api/sites/auto-create', {
+      // Use the existing sites endpoint
+      const response = await fetch('/api/sites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

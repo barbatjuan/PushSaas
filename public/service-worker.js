@@ -148,7 +148,7 @@ self.addEventListener('notificationclick', (event) => {
   console.log('🚀 PushSaaS SW: Sending click data:', clickData);
   
   // Send click tracking request
-  const trackClick = fetch('https://web-push-notifications-phi.vercel.app/api/notifications/click', {
+  const trackClick = fetch('https://web-push-notifications-phi.vercel.app/api/notifications/clicked', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(clickData)

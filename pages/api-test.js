@@ -245,7 +245,7 @@ export default function ApiTest() {
         body: JSON.stringify({ 
           siteId, 
           title: notificationTitle,
-          body: notificationBody,
+          message: notificationBody,
           url: notificationUrl,
           icon: '/icon-192.png'
         })

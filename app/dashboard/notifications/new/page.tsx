@@ -70,13 +70,13 @@ export default function NewNotificationPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetch('/api/push/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          site_id: formData.site_id,
+          siteId: formData.site_id,
           title: formData.title.trim(),
           message: formData.message.trim(),
           url: formData.url.trim() || null,
