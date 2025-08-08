@@ -1,6 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+
 import { supabaseAdmin } from '@/lib/supabase';
 import Link from 'next/link'
 import { BarChart3, Users, Globe, Settings, DollarSign } from 'lucide-react'
@@ -16,11 +16,12 @@ export default async function AdminLayout({
     redirect('/sign-in')
   }
 
-  const cookieStore = cookies();
-  const adminPass = cookieStore.get('admin-pass');
+  const isAdmin = user.publicMetadata.role === 'admin';
 
-  if (adminPass?.value !== process.env.ADMIN_PASSWORD) {
-    redirect('/admin/login');
+  if (!isAdmin) {
+    // Si no es admin, redirigir al dashboard normal o a una página de acceso denegado.
+    // Por ahora, lo redirigimos al dashboard principal.
+    redirect('/dashboard');
   }
 
   return (
