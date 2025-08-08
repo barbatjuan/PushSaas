@@ -50,7 +50,7 @@ export default function ApiTest() {
         // Necesitamos las claves VAPID para crear suscripción
         // En producción, estas vendrían del backend
         // Obtener clave VAPID dinámica del endpoint API
-        const response = await fetch('/api/sites/y70tplqd4an');
+        const response = await fetch('/api/sites/c670c8bcd133');
         const siteData = await response.json();
         const vapidPublicKey = siteData.vapidPublicKey;
         
