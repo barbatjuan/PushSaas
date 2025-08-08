@@ -16,6 +16,10 @@ export default async function AdminLayout({
     redirect('/sign-in')
   }
 
+  // Debugging: Log the user's public metadata to see what the server receives
+  console.log('Checking admin status for user:', user.id);
+  console.log('User public metadata:', JSON.stringify(user.publicMetadata, null, 2));
+
   const isAdmin = user.publicMetadata.role === 'admin';
 
   if (!isAdmin) {
