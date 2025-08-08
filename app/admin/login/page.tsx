@@ -21,15 +21,18 @@ export default function AdminLogin() {
     setError('')
 
     try {
-      // Test the admin password by making a request to the stats API
-      const response = await fetch(`/api/admin/stats?admin_password=${encodeURIComponent(password)}`)
-      
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
       if (response.ok) {
-        // Store the admin password in sessionStorage for subsequent requests
-        sessionStorage.setItem('admin_password', password)
-        router.push('/admin/simple')
+        router.push('/admin/simple');
       } else {
-        setError('Contraseña de administrador incorrecta')
+        setError('Contraseña de administrador incorrecta');
       }
     } catch (error) {
       setError('Error al verificar la contraseña')

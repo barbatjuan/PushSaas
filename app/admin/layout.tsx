@@ -1,6 +1,7 @@
-import { currentUser } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
-import { supabaseAdmin } from '@/lib/supabase'
+import { currentUser } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { supabaseAdmin } from '@/lib/supabase';
 import Link from 'next/link'
 import { BarChart3, Users, Globe, Settings, DollarSign } from 'lucide-react'
 
@@ -15,8 +16,12 @@ export default async function AdminLayout({
     redirect('/sign-in')
   }
 
-  // Admin authentication is now handled by password in the frontend
-  // Users will be redirected to /admin/login if they don't have the password
+  const cookieStore = cookies();
+  const adminPass = cookieStore.get('admin-pass');
+
+  if (adminPass?.value !== process.env.ADMIN_PASSWORD) {
+    redirect('/admin/login');
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
