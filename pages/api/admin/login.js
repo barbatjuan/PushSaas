@@ -6,8 +6,18 @@ export default function handler(req, res) {
   }
 
   const { password } = req.body;
+  const serverPassword = process.env.ADMIN_PASSWORD;
 
-  if (password === process.env.ADMIN_PASSWORD) {
+  // Debugging logs
+  console.log('Admin login attempt received.');
+  console.log(`Is ADMIN_PASSWORD set on server? ${!!serverPassword}`);
+  if (serverPassword) {
+    console.log(`Received password length: ${password?.length || 0}`);
+    console.log(`Server password length: ${serverPassword.length}`);
+  }
+
+  if (password === serverPassword) {
+    console.log('Admin password match. Setting cookie.');
     const cookie = serialize('admin-pass', password, {
       httpOnly: true,
       secure: process.env.NODE_ENV !== 'development',
@@ -18,6 +28,7 @@ export default function handler(req, res) {
     res.setHeader('Set-Cookie', cookie);
     res.status(200).json({ success: true });
   } else {
+    console.log('Admin password mismatch.');
     res.status(401).json({ error: 'Invalid password' });
   }
 }
