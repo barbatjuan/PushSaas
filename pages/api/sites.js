@@ -5,8 +5,11 @@ import webpush from 'web-push';
 
 export default async function handler(req, res) {
   // Endpoint público para desarrollo y producción
-  // Usamos el ID real del usuario info@webcoders.es
-  const userId = '8f81263a-b753-4c62-a504-14dee864c957'; // ID real del usuario info@webcoders.es
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
 
   if (req.method === 'GET') {
     // Listar sitios

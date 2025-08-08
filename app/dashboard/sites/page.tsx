@@ -27,7 +27,8 @@ export default function SitesPage() {
   const fetchSites = async () => {
     try {
       setLoadingSites(true)
-      const response = await fetch('/api/sites')
+      if (!user?.id) throw new Error('User not found');
+      const response = await fetch(`/api/sites?userId=${user.id}`)
       if (!response.ok) throw new Error('Failed to fetch sites')
       const data = await response.json()
       setSites(data || [])
