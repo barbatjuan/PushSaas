@@ -24,11 +24,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Verificar que el sitio existe
+    // Verificar que el sitio existe, buscando por site_id (texto) o por id (uuid)
     const { data: siteData, error: siteError } = await supabaseAdmin
       .from('sites')
       .select('id, user_id')
-      .eq('site_id', siteId)
+      .or(`site_id.eq.${siteId},id.eq.${siteId}`)
       .eq('status', 'active')
       .single();
 
