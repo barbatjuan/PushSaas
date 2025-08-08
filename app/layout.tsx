@@ -6,6 +6,9 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/favicon.svg',
+  },
   title: 'Push Notifications SaaS',
   description: 'White-label push notifications platform for small businesses',
 }

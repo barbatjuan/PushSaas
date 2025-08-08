@@ -11,13 +11,8 @@ const urlsToCache = [
 // Instalación del Service Worker
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker');
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
+  // Skip cache.addAll for now to avoid installation failures
+  event.waitUntil(Promise.resolve());
   // Forzar activación inmediata
   self.skipWaiting();
 });

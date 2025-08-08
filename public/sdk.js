@@ -473,22 +473,15 @@
   // Fetch VAPID public key from backend
   async function fetchVapidKey() {
     try {
-      console.log('🔍 PushSaaS: Fetching VAPID key from:', `${apiBase}/api/vapid-key`);
-      const response = await fetch(`${apiBase}/api/vapid-key`);
+      console.log('🔑 PushSaaS: Fetching VAPID key from:', `${apiBase}/api/sites/${siteId}`);
+      const response = await fetch(`${apiBase}/api/sites/${siteId}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch VAPID key: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch VAPID key: ${response.status}`);
       }
       const data = await response.json();
-      console.log('📦 PushSaaS: VAPID response data:', data);
-      
-      if (!data.publicKey) {
-        throw new Error('No publicKey in response');
-      }
-      
-      vapidPublicKey = data.publicKey;
-      window.PushSaaS.vapidPublicKey = vapidPublicKey; // 💥 FIX GLOBAL
-      console.log('🔑 PushSaaS: VAPID key stored:', vapidPublicKey ? vapidPublicKey.substring(0, 20) + '...' : 'NULL');
-      console.log('✅ PushSaaS: VAPID key fetched successfully');
+      vapidPublicKey = data.vapidPublicKey;
+      window.PushSaaS.vapidPublicKey = vapidPublicKey;
+      console.log('🔑 PushSaaS: Got VAPID key:', vapidPublicKey ? vapidPublicKey.substring(0, 20) + '...' : 'MISSING');
     } catch (error) {
       console.error('❌ PushSaaS: Failed to fetch VAPID key:', error);
       throw error;
