@@ -494,7 +494,7 @@
       console.log('🔧 PushSaaS: Registering Service Worker...');
       
       // Try physical file first (best performance)
-      let swUrl = `/service-worker.js?site=${siteId}`;
+      let swUrl = `/sw.js?site=${siteId}`;
       console.log('📡 PushSaaS: Trying physical file:', swUrl);
       
       try {
@@ -537,7 +537,7 @@
         }
         
         // Final fallback: Try external service worker
-        swUrl = `${apiBase}/api/service-worker?site=${siteId}`;
+        swUrl = `${apiBase}/sw.js?site=${siteId}`;
         console.log('📡 PushSaaS: Trying external service worker:', swUrl);
         
         try {
@@ -561,8 +561,8 @@
     } catch (error) {
       console.error('❌ PushSaaS: Service Worker registration failed:', error);
       console.log('📝 PushSaaS: Manual setup required:');
-      console.log(`   1. Download: ${apiBase}/service-worker.js`);
-      console.log('   2. Upload to your website root as: /service-worker.js');
+      console.log(`   1. Download: ${apiBase}/sw.js`);
+      console.log('   2. Upload to your website root as: /sw.js');
       console.log('   3. Reload this page');
       
       // Continue without service worker (limited functionality)
@@ -636,7 +636,7 @@
       }
       
       if (!serviceWorkerRegistration) {
-        throw new Error('Service Worker not registered — check if service-worker.js exists');
+        throw new Error('Service Worker not registered — check if sw.js exists');
       }
 
       // Request permission
