@@ -1,16 +1,26 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-import { supabaseAdmin } from '@/lib/supabase';
+// Import supabaseAdmin lazily inside the component to avoid crashing
+// on environments where service role is not configured.
 import Link from 'next/link'
 import { BarChart3, Users, Globe, Settings, DollarSign } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const user = await currentUser()
+  let user: any = null
+  try {
+    user = await currentUser()
+  } catch (e) {
+    console.error('Error calling currentUser in admin layout:', e)
+    redirect('/sign-in')
+  }
   
   if (!user) {
     redirect('/sign-in')
@@ -22,6 +32,7 @@ export default async function AdminLayout({
   // Verificar rol desde la base de datos (fuente de verdad)
   let isAdmin = false
   try {
+    const { supabaseAdmin } = await import('@/lib/supabase')
     const { data: dbUser, error } = await supabaseAdmin
       .from('users')
       .select('role')
