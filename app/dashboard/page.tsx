@@ -182,7 +182,7 @@ export default function DashboardPage() {
               Gestiona tus sitios y notificaciones
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <Link href="/dashboard/sites/new">
               <Button className="w-full justify-start bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 group">
                 <Plus className="mr-3 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
@@ -190,7 +190,10 @@ export default function DashboardPage() {
               </Button>
             </Link>
             <Link href="/dashboard/notifications/new">
-              <Button variant="outline" className="w-full justify-start border-2 border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50 text-indigo-700 hover:text-indigo-800 transition-all duration-200 group">
+              <Button
+                variant="outline"
+                className="w-full justify-start border-2 border-indigo-300/70 dark:border-indigo-400/40 bg-white/80 dark:bg-gray-800/60 text-indigo-700 dark:text-indigo-100 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm hover:shadow transition-all duration-200 group"
+              >
                 <Bell className="mr-3 h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                 Enviar Notificación
               </Button>
