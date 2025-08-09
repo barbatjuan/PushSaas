@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { currentUser } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
+ 
+ // This route reads request headers; ensure it's treated as dynamic
+ export const dynamic = 'force-dynamic'
+ // Disable caching
+ export const revalidate = 0
 
 export async function GET(request: NextRequest) {
   try {

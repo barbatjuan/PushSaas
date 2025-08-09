@@ -199,19 +199,13 @@ export default function NewSitePage() {
                 🎉 ¡Sitio Creado Automáticamente!
               </CardTitle>
               <CardDescription className="text-green-700">
-                Tu sitio ha sido configurado completamente. OneSignal se creó y configuró automáticamente.
+                Tu sitio ha sido configurado completamente. La integración de notificaciones push quedó lista.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Automation Status */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg border">
-                <div className="text-center">
-                  <div className="text-2xl mb-2">
-                    {automationResult.automation_status?.onesignal_created ? '✅' : '❌'}
-                  </div>
-                  <p className="text-sm font-medium">OneSignal App</p>
-                  <p className="text-xs text-gray-600">Creado automáticamente</p>
-                </div>
+                {/* OneSignal removed */}
                 <div className="text-center">
                   <div className="text-2xl mb-2">
                     {automationResult.automation_status?.web_push_configured ? '✅' : '❌'}
@@ -252,7 +246,7 @@ export default function NewSitePage() {
                 <h4 className="font-semibold text-blue-800 mb-2">Detalles del Sitio</h4>
                 <div className="space-y-1 text-sm">
                   <p><strong>ID del Sitio:</strong> {automationResult.site?.id}</p>
-                  <p><strong>OneSignal App ID:</strong> {automationResult.site?.onesignal_app_id}</p>
+                  {/* OneSignal removed */}
                   <p><strong>Estado:</strong> {automationResult.automation_status?.ready_to_use ? '✅ Listo para usar' : '⚠️ Requiere configuración adicional'}</p>
                 </div>
               </div>

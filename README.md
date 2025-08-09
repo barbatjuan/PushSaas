@@ -8,7 +8,7 @@ Una plataforma SaaS white-label para que pequeños negocios puedan reconectar co
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Autenticación**: Clerk
 - **Base de datos**: Supabase (PostgreSQL)
-- **Push Notifications**: OneSignal API
+- **Push Notifications**: Web Push nativo (VAPID)
 - **Deployment**: Vercel
 
 ## 🚀 Configuración Inicial
@@ -43,13 +43,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
 3. Ejecuta el SQL del archivo `supabase/schema.sql` en el SQL Editor de Supabase
 
-#### OneSignal (Push Notifications)
-1. Ve a [onesignal.com](https://onesignal.com) y crea una cuenta
-2. Crea una nueva app (Web Push)
-3. Copia las claves:
+#### Web Push (VAPID)
+Las claves VAPID se gestionan por sitio en la base de datos (tabla `vapid_keys`). Asegúrate de tener configuradas estas variables globales para la app:
 ```env
-ONESIGNAL_APP_ID=tu-app-id
-ONESIGNAL_REST_API_KEY=tu-rest-api-key
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+NEXT_PUBLIC_APP_URL=https://tu-dominio.com
 ```
 
 ### 3. Configurar la base de datos
@@ -98,7 +97,7 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 ### ✅ Gestión de Sitios
 - Registro de sitios web
 - Generación de códigos JavaScript únicos
-- Integración automática con OneSignal
+- Integración automática con Web Push (VAPID)
 
 ### ✅ Recolección de Suscriptores
 - SDK JavaScript embebible
@@ -107,7 +106,7 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 
 ### ✅ Envío de Notificaciones
 - Interfaz para crear notificaciones
-- Integración con OneSignal API
+- Envío con Web Push nativo
 - Métricas básicas (enviados, entregados, clics)
 
 ### ✅ Restricciones de Plan
@@ -127,7 +126,7 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 1. **Configurar las cuentas de servicio**:
    - Clerk para autenticación
    - Supabase para base de datos
-   - OneSignal para push notifications
+   - Web Push nativo para notificaciones
 
 2. **Desplegar la aplicación** en Vercel o similar
 
@@ -176,10 +175,10 @@ Si hay problemas con la base de datos:
 - Verifica que el esquema SQL se haya ejecutado
 - Revisa las políticas RLS en Supabase
 
-### Error de OneSignal
+### Error de Web Push
 Para problemas con notificaciones:
-- Verifica las claves de OneSignal
-- Asegúrate de que el dominio esté configurado en OneSignal
+- Verifica las claves VAPID
+- Revisa que las suscripciones existan para el sitio
 
 ## 📞 Soporte
 
@@ -187,7 +186,7 @@ Para problemas técnicos o preguntas sobre el código, revisa:
 1. Los logs del servidor (`npm run dev`)
 2. La consola del navegador
 3. Los logs de Supabase
-4. Los logs de OneSignal
+4. Los logs del endpoint `/api/notifications`
 
 ## 📄 Licencia
 

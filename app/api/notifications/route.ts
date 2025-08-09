@@ -42,9 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Site is not active' }, { status: 400 })
     }
 
-    if (!site.onesignal_app_id) {
-      return NextResponse.json({ error: 'OneSignal not configured for this site' }, { status: 400 })
-    }
+    // OneSignal is no longer required; using native web-push
 
     // Check if site has subscribers
     const { count: subscriberCount, error: countError } = await supabaseAdmin
