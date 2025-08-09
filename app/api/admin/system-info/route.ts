@@ -13,12 +13,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check admin password
-    const adminPassword = request.headers.get('x-admin-password') || 
-                         new URL(request.url).searchParams.get('admin_password')
-    
-    if (!adminPassword || adminPassword !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    // 1) Prefer DB role check using Clerk user
+    let isAdmin = false
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      const { data: dbUser, error } = await supabaseAdmin
+        .from('users')
+        .select('role')
+        .eq('clerk_id', user.id)
+        .single()
+      if (!error && dbUser?.role === 'admin') {
+        isAdmin = true
+      }
+    } catch (e) {
+      console.error('Error checking admin role from DB:', e)
+    }
+
+    // 2) Fallback: ADMIN_PASSWORD
+    if (!isAdmin) {
+      const adminPassword = request.headers.get('x-admin-password') || 
+                           new URL(request.url).searchParams.get('admin_password')
+      if (!adminPassword || adminPassword !== process.env.ADMIN_PASSWORD) {
+        return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+      }
     }
 
     console.log('⚙️ Fetching system information...')
