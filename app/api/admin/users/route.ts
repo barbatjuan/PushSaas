@@ -35,31 +35,41 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get all users with their sites
+    // Get all users (without relying on FK-based nested selects)
     const { data: users, error: usersError } = await supabaseAdmin
       .from('users')
-      .select(`
-        id,
-        clerk_id,
-        email,
-        name,
-        role,
-        plan,
-        created_at,
-        updated_at,
-        sites (
-          id,
-          name,
-          url,
-          status,
-          subscriber_count
-        )
-      `)
+      .select('id, clerk_id, email, name, role, plan, created_at, updated_at')
       .order('created_at', { ascending: false })
 
     if (usersError) throw usersError
 
-    return NextResponse.json({ users })
+    // Fetch all sites and group by user_id
+    const { data: sites, error: sitesError } = await supabaseAdmin
+      .from('sites')
+      .select('id, name, url, status, subscriber_count, user_id')
+
+    if (sitesError) throw sitesError
+
+    const sitesByUser: Record<string, any[]> = {}
+    for (const s of sites || []) {
+      const key = s.user_id as unknown as string
+      if (!key) continue
+      if (!sitesByUser[key]) sitesByUser[key] = []
+      sitesByUser[key].push({
+        id: s.id,
+        name: s.name,
+        url: s.url,
+        status: s.status,
+        subscriber_count: s.subscriber_count,
+      })
+    }
+
+    const enriched = (users || []).map(u => ({
+      ...u,
+      sites: sitesByUser[u.id] || []
+    }))
+
+    return NextResponse.json({ users: enriched })
 
   } catch (error) {
     console.error('Error fetching users:', error)
