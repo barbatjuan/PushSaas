@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { currentUser } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Esta ruta debe ser dinámica porque usa headers()
+export const dynamic = 'force-dynamic'
+
+// Deshabilitar la caché para esta ruta
+export const revalidate = 0
+
 export async function GET(request: NextRequest) {
   try {
     const user = await currentUser()
