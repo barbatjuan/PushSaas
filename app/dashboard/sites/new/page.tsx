@@ -42,6 +42,8 @@ export default function NewSitePage() {
           name: formData.name.trim(),
           url: formData.url.trim(),
           logo_url: formData.logo_url.trim() || undefined,
+          // Pasar Clerk ID para que el backend mapee a users.id (UUID)
+          clerkId: user.id,
         }),
       })
 

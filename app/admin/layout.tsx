@@ -19,8 +19,24 @@ export default async function AdminLayout({
   // Debugging: Log the user's public metadata to see what the server receives
   console.log('Checking admin status for user:', user.id);
   console.log('User public metadata:', JSON.stringify(user.publicMetadata, null, 2));
-
-  const isAdmin = user.publicMetadata.role === 'admin';
+  // Verificar rol desde la base de datos (fuente de verdad)
+  let isAdmin = false
+  try {
+    const { data: dbUser, error } = await supabaseAdmin
+      .from('users')
+      .select('role')
+      .eq('clerk_id', user.id)
+      .single()
+    if (!error && dbUser?.role === 'admin') {
+      isAdmin = true
+    }
+  } catch (e) {
+    console.error('Error comprobando rol admin en DB:', e)
+  }
+  // Fallback: permitir metadata de Clerk si existe
+  if (!isAdmin && (user.publicMetadata as any)?.role === 'admin') {
+    isAdmin = true
+  }
 
   if (!isAdmin) {
     // Si no es admin, redirigir al dashboard normal o a una página de acceso denegado.

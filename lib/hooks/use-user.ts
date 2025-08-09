@@ -28,23 +28,52 @@ export function useCurrentUser() {
         if (existingUser) {
           setDbUser(existingUser)
         } else if (error?.code === 'PGRST116') {
-          // User doesn't exist, create them
-          const { data: newUser, error: createError } = await supabase
+          // No row by clerk_id. Try to link existing row by email to avoid duplicates and preserve role/plan.
+          const primaryEmail = clerkUser.emailAddresses[0]?.emailAddress || ''
+
+          const { data: byEmail, error: emailErr } = await supabase
             .from('users')
-            .insert({
-              clerk_id: clerkUser.id,
-              email: clerkUser.emailAddresses[0]?.emailAddress || '',
-              name: clerkUser.fullName,
-              role: 'user',
-              plan: 'free',
-            })
-            .select()
+            .select('*')
+            .eq('email', primaryEmail)
             .single()
 
-          if (createError) {
-            console.error('Error creating user:', createError)
+          if (byEmail && !emailErr) {
+            // Update existing row to attach current clerk_id (preserve role/plan)
+            const { data: updated, error: updateErr } = await supabase
+              .from('users')
+              .update({
+                clerk_id: clerkUser.id,
+                name: byEmail.name || clerkUser.fullName || byEmail.email,
+              })
+              .eq('id', byEmail.id)
+              .select('*')
+              .single()
+
+            if (updateErr) {
+              console.error('Error linking user by email:', updateErr)
+            } else {
+              setDbUser(updated)
+            }
           } else {
-            setDbUser(newUser)
+            // Create new user; set role from Clerk metadata if present
+            const roleFromMetadata = (clerkUser.publicMetadata as any)?.role === 'admin' ? 'admin' : 'user'
+            const { data: newUser, error: createError } = await supabase
+              .from('users')
+              .insert({
+                clerk_id: clerkUser.id,
+                email: primaryEmail,
+                name: clerkUser.fullName,
+                role: roleFromMetadata,
+                plan: 'free',
+              })
+              .select('*')
+              .single()
+
+            if (createError) {
+              console.error('Error creating user:', createError)
+            } else {
+              setDbUser(newUser)
+            }
           }
         } else {
           console.error('Error fetching user:', error)
