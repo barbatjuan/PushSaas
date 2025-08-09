@@ -39,22 +39,16 @@ export default function SimpleAdminDashboard() {
     try {
       setRefreshing(true)
       setError('')
-      
-      const adminPassword = sessionStorage.getItem('admin_password')
-      if (!adminPassword) {
-        window.location.href = '/admin/login'
-        return
-      }
-
-      // Fetch basic counts directly from Supabase
-      const response = await fetch(`/api/admin/simple-stats?admin_password=${encodeURIComponent(adminPassword)}`)
+      // Fetch basic counts. Server validates admin role via Clerk + DB.
+      const response = await fetch(`/api/admin/simple-stats`)
       
       if (response.ok) {
         const data = await response.json()
         setStats(data)
+      } else if (response.status === 401) {
+        setError('No autenticado. Inicia sesión e inténtalo de nuevo.')
       } else if (response.status === 403) {
-        sessionStorage.removeItem('admin_password')
-        window.location.href = '/admin/login'
+        setError('Acceso restringido. Tu usuario no es admin.')
       } else {
         setError('Error al cargar las estadísticas')
       }
