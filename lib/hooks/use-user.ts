@@ -18,6 +18,13 @@ export function useCurrentUser() {
 
     const fetchOrCreateUser = async () => {
       try {
+        // Ensure server-side linkage to avoid RLS issues and duplicates
+        try {
+          await fetch('/api/auth/sync-user', { method: 'POST' })
+        } catch (e) {
+          console.error('sync-user call failed (non-blocking):', e)
+        }
+
         // First, try to get the user from our database
         const { data: existingUser, error } = await supabase
           .from('users')
