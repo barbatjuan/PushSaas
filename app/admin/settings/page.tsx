@@ -31,20 +31,13 @@ export default function AdminSettings() {
     try {
       setError('')
       
-      const adminPassword = sessionStorage.getItem('admin_password')
-      if (!adminPassword) {
-        window.location.href = '/admin/login'
-        return
-      }
-
-      const response = await fetch(`/api/admin/system-info?admin_password=${encodeURIComponent(adminPassword)}`)
+      const response = await fetch(`/api/admin/system-info`)
       
       if (response.ok) {
         const data = await response.json()
         setSystemInfo(data)
-      } else if (response.status === 403) {
-        sessionStorage.removeItem('admin_password')
-        window.location.href = '/admin/login'
+      } else if (response.status === 401 || response.status === 403) {
+        setError('No autorizado: inicia sesión con una cuenta admin')
       } else {
         setError('Error al cargar la información del sistema')
       }
