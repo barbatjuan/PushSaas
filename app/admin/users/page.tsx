@@ -119,43 +119,43 @@ export default function AdminUsers() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage users, plans, and site access</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">User Management</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage users, plans, and site access</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{users.length}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">{users.length}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Paid Users</CardTitle>
               <Crown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                 {users.filter(u => u.plan === 'paid').length}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {((users.filter(u => u.plan === 'paid').length / users.length) * 100).toFixed(1)}% conversion
               </p>
             </CardContent>
@@ -163,11 +163,11 @@ export default function AdminUsers() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Sites</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Sites</CardTitle>
               <Globe className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                 {users.reduce((sum, user) => sum + user.sites.length, 0)}
               </div>
             </CardContent>
@@ -175,11 +175,11 @@ export default function AdminUsers() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Sites</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Sites</CardTitle>
               <Globe className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                 {users.reduce((sum, user) => 
                   sum + user.sites.filter(site => site.status === 'active').length, 0
                 )}
@@ -191,7 +191,7 @@ export default function AdminUsers() {
         {/* Filters */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-white">Users ({users.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4">
@@ -234,7 +234,7 @@ export default function AdminUsers() {
         <Card>
           <CardHeader>
             <CardTitle>Users ({filteredUsers.length})</CardTitle>
-            <CardDescription>Manage user accounts and their sites</CardDescription>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Manage user accounts and their sites</p>
           </CardHeader>
           <CardContent>
             <Table>
@@ -254,8 +254,8 @@ export default function AdminUsers() {
                   <TableRow key={user.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{user.name || 'No name'}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="font-medium text-gray-900 dark:text-slate-100">{user.name || 'No name'}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -281,7 +281,7 @@ export default function AdminUsers() {
                       <div className="space-y-1">
                         {user.sites.map((site) => (
                           <div key={site.id} className="flex items-center gap-2">
-                            <span className="text-sm">{site.name}</span>
+                            <span className="text-sm text-gray-900 dark:text-slate-100">{site.name}</span>
                             <Badge 
                               variant={site.status === 'active' ? 'default' : 'destructive'}
                               className="text-xs"
@@ -301,17 +301,17 @@ export default function AdminUsers() {
                           </div>
                         ))}
                         {user.sites.length === 0 && (
-                          <span className="text-sm text-gray-400">No sites</span>
+                          <span className="text-sm text-gray-400 dark:text-gray-500">No sites</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
+                      <div className="text-sm text-gray-900 dark:text-slate-100">
                         {user.sites.reduce((sum, site) => sum + site.subscriber_count, 0)}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
+                      <div className="text-sm text-gray-900 dark:text-slate-100">
                         {new Date(user.created_at).toLocaleDateString()}
                       </div>
                     </TableCell>

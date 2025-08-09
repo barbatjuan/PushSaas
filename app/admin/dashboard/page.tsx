@@ -91,7 +91,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -99,10 +99,10 @@ export default function AdminDashboard() {
 
   if (!stats) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading dashboard</h2>
-          <p className="text-gray-600 mb-4">{error || 'Unable to fetch dashboard statistics'}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error loading dashboard</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error || 'Unable to fetch dashboard statistics'}</p>
           <Button onClick={fetchStats}>Try Again</Button>
         </div>
       </div>
@@ -110,13 +110,13 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">PushSaaS Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Monitor your SaaS performance and metrics</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">PushSaaS Admin Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Monitor your SaaS performance and metrics</p>
           </div>
           <Button 
             onClick={fetchStats} 

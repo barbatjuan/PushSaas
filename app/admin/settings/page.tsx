@@ -55,10 +55,10 @@ export default function AdminSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando configuración...</p>
+          <p className="text-gray-600 dark:text-gray-400">Cargando configuración...</p>
         </div>
       </div>
     )
@@ -66,7 +66,7 @@ export default function AdminSettings() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">❌ {error}</div>
           <Button onClick={fetchSystemInfo}>Reintentar</Button>
@@ -76,13 +76,13 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Configuración del Sistema</h1>
-            <p className="text-gray-600 mt-2">Estado y configuración de PushSaaS</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">Configuración del Sistema</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Estado y configuración de PushSaaS</p>
           </div>
           <Button 
             onClick={fetchSystemInfo} 
@@ -99,13 +99,13 @@ export default function AdminSettings() {
           {/* Environment */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Entorno
               </CardTitle>
               <Server className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {systemInfo?.environment || 'development'}
               </div>
               <Badge variant={systemInfo?.environment === 'production' ? 'default' : 'secondary'}>
@@ -117,13 +117,13 @@ export default function AdminSettings() {
           {/* Database */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Base de Datos
               </CardTitle>
               <Database className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Supabase
               </div>
               <Badge variant={systemInfo?.supabaseConfigured ? 'default' : 'destructive'}>
@@ -148,8 +148,8 @@ export default function AdminSettings() {
                 <div className="flex items-center gap-3">
                   <Key className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="font-medium text-gray-900">Contraseña de Administrador</p>
-                    <p className="text-sm text-gray-500">Autenticación para el panel admin</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Contraseña de Administrador</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Autenticación para el panel admin</p>
                   </div>
                 </div>
                 <Badge variant={systemInfo?.adminPasswordSet ? 'default' : 'destructive'}>
@@ -162,8 +162,8 @@ export default function AdminSettings() {
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="font-medium text-gray-900">Clerk Authentication</p>
-                    <p className="text-sm text-gray-500">Sistema de autenticación de usuarios</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Clerk Authentication</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Sistema de autenticación de usuarios</p>
                   </div>
                 </div>
                 <Badge variant={systemInfo?.clerkConfigured ? 'default' : 'destructive'}>
@@ -176,8 +176,8 @@ export default function AdminSettings() {
                 <div className="flex items-center gap-3">
                   <Key className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="font-medium text-gray-900">VAPID Keys</p>
-                    <p className="text-sm text-gray-500">Claves para notificaciones push</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">VAPID Keys</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Claves para notificaciones push</p>
                   </div>
                 </div>
                 <Badge variant={systemInfo?.vapidConfigured ? 'default' : 'destructive'}>
@@ -190,8 +190,8 @@ export default function AdminSettings() {
                 <div className="flex items-center gap-3">
                   <Database className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="font-medium text-gray-900">Supabase Database</p>
-                    <p className="text-sm text-gray-500">Base de datos principal</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Supabase Database</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Base de datos principal</p>
                   </div>
                 </div>
                 <Badge variant={systemInfo?.supabaseConfigured ? 'default' : 'destructive'}>
@@ -213,28 +213,28 @@ export default function AdminSettings() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="font-medium text-gray-900">Versión</p>
-                <p className="text-gray-600">PushSaaS v1.0.0</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Versión</p>
+                <p className="text-gray-600 dark:text-gray-400">PushSaaS v1.0.0</p>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Framework</p>
-                <p className="text-gray-600">Next.js 14</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Framework</p>
+                <p className="text-gray-600 dark:text-gray-400">Next.js 14</p>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Base de Datos</p>
-                <p className="text-gray-600">Supabase PostgreSQL</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Base de Datos</p>
+                <p className="text-gray-600 dark:text-gray-400">Supabase PostgreSQL</p>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Autenticación</p>
-                <p className="text-gray-600">Clerk + Admin Password</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Autenticación</p>
+                <p className="text-gray-600 dark:text-gray-400">Clerk + Admin Password</p>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Push Notifications</p>
-                <p className="text-gray-600">Web Push API + VAPID</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Push Notifications</p>
+                <p className="text-gray-600 dark:text-gray-400">Web Push API + VAPID</p>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Última actualización</p>
-                <p className="text-gray-600">{new Date().toLocaleString('es-ES')}</p>
+                <p className="font-medium text-gray-900 dark:text-slate-100">Última actualización</p>
+                <p className="text-gray-600 dark:text-gray-400">{new Date().toLocaleString('es-ES')}</p>
               </div>
             </div>
           </CardContent>

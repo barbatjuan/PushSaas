@@ -43,15 +43,15 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
+          <CardTitle className="text-gray-900 dark:text-cyan-400">Admin Login</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Contraseña de administrador
               </label>
               <Input
@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
             </div>
 
             {error && (
-              <div className="text-sm text-red-600">{error}</div>
+              <div className="text-sm text-red-500">{error}</div>
             )}
 
             <div className="flex items-center gap-3">
@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
               <Button type="button" variant="outline" onClick={handleClear}>Limpiar</Button>
             </div>
 
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Nota: Esta pantalla existe por compatibilidad temporal. Los endpoints ya soportan login con Clerk + rol admin.
             </p>
           </form>

@@ -98,10 +98,10 @@ export default function SaaSMetricsDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando métricas SaaS...</p>
+          <p className="text-gray-600 dark:text-gray-400">Cargando métricas SaaS...</p>
         </div>
       </div>
     )
@@ -109,7 +109,7 @@ export default function SaaSMetricsDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">❌ {error}</div>
           <Button onClick={fetchMetrics}>Reintentar</Button>
@@ -119,13 +119,13 @@ export default function SaaSMetricsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Métricas SaaS</h1>
-            <p className="text-gray-600 mt-2">Indicadores clave de rendimiento financiero</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">Métricas SaaS</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Indicadores clave de rendimiento financiero</p>
           </div>
           <Button 
             onClick={fetchMetrics} 
@@ -143,13 +143,13 @@ export default function SaaSMetricsDashboard() {
           {/* MRR */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 MRR (Monthly Recurring Revenue)
               </CardTitle>
               <DollarSign className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {formatCurrency(metrics?.mrr || 0)}
               </div>
               <div className="flex items-center mt-2">
@@ -168,13 +168,13 @@ export default function SaaSMetricsDashboard() {
           {/* ARR */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 ARR (Annual Recurring Revenue)
               </CardTitle>
               <BarChart3 className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {formatCurrency(metrics?.arr || 0)}
               </div>
               <p className="text-sm text-gray-500 mt-2">
@@ -186,13 +186,13 @@ export default function SaaSMetricsDashboard() {
           {/* ARPU */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 ARPU (Average Revenue Per User)
               </CardTitle>
               <Users className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {formatCurrency(metrics?.arpu || 0)}
               </div>
               <p className="text-sm text-gray-500 mt-2">
@@ -204,16 +204,16 @@ export default function SaaSMetricsDashboard() {
           {/* Churn Rate */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Churn Rate
               </CardTitle>
               <TrendingDown className="h-5 w-5 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {(metrics?.churnRate || 0).toFixed(1)}%
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Tasa de cancelación mensual
               </p>
             </CardContent>
@@ -225,13 +225,13 @@ export default function SaaSMetricsDashboard() {
           {/* Total Users */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Usuarios
               </CardTitle>
               <Users className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {metrics?.totalUsers || 0}
               </div>
               <div className="flex gap-2 mt-2">
@@ -244,16 +244,16 @@ export default function SaaSMetricsDashboard() {
           {/* Conversion Rate */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Conversion Rate
               </CardTitle>
               <Target className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {(metrics?.conversionRate || 0).toFixed(1)}%
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Free to Paid
               </p>
             </CardContent>
@@ -262,16 +262,16 @@ export default function SaaSMetricsDashboard() {
           {/* LTV */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 LTV (Customer Lifetime Value)
               </CardTitle>
               <DollarSign className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {formatCurrency(metrics?.ltv || 0)}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Valor promedio del cliente
               </p>
             </CardContent>
@@ -280,16 +280,16 @@ export default function SaaSMetricsDashboard() {
           {/* Growth Rate */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Growth Rate
               </CardTitle>
               <TrendingUp className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
-                {formatPercentage(metrics?.userGrowthRate || 0)}
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
+                {formatPercentage(metrics?.churnRate || 0)}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Crecimiento mensual de usuarios
               </p>
             </CardContent>

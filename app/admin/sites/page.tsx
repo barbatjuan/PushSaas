@@ -59,10 +59,10 @@ export default function SitesManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando sitios...</p>
+          <p className="text-gray-600 dark:text-gray-400">Cargando sitios...</p>
         </div>
       </div>
     )
@@ -70,7 +70,7 @@ export default function SitesManagement() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">❌ {error}</div>
           <Button onClick={fetchSites}>Reintentar</Button>
@@ -80,13 +80,13 @@ export default function SitesManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Sitios</h1>
-            <p className="text-gray-600 mt-2">Administra todos los sitios configurados</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">Gestión de Sitios</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Administra todos los sitios configurados</p>
           </div>
           <Button 
             onClick={fetchSites} 
@@ -103,13 +103,13 @@ export default function SitesManagement() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Sitios
               </CardTitle>
               <Globe className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {sites.length}
               </div>
             </CardContent>
@@ -117,13 +117,13 @@ export default function SitesManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Sitios Activos
               </CardTitle>
               <Globe className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                 {sites.filter(s => s.status === 'active').length}
               </div>
             </CardContent>
@@ -131,13 +131,13 @@ export default function SitesManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Suscriptores
               </CardTitle>
               <Users className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
                 {sites.reduce((sum, site) => sum + (site.subscriber_count || 0), 0)}
               </div>
             </CardContent>
@@ -153,17 +153,17 @@ export default function SitesManagement() {
             {sites.length > 0 ? (
               <div className="space-y-4">
                 {sites.map((site) => (
-                  <div key={site.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <div key={site.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{site.name}</h3>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">{site.name}</h3>
                           <Badge variant={site.status === 'active' ? 'default' : 'destructive'}>
                             {site.status}
                           </Badge>
                         </div>
                         
-                        <div className="space-y-1 text-sm text-gray-600">
+                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex items-center gap-2">
                             <ExternalLink className="h-4 w-4" />
                             <a 
@@ -178,7 +178,7 @@ export default function SitesManagement() {
                           
                           <div className="flex items-center gap-2">
                             <span className="font-medium">Site ID:</span>
-                            <code className="bg-gray-100 px-2 py-1 rounded text-xs">{site.site_id}</code>
+                            <code className="bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded text-xs">{site.site_id}</code>
                           </div>
                           
                           <div className="flex items-center gap-2">
@@ -194,10 +194,10 @@ export default function SitesManagement() {
                       </div>
                       
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
                           {site.subscriber_count || 0}
                         </div>
-                        <div className="text-sm text-gray-500">suscriptores</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">suscriptores</div>
                       </div>
                     </div>
                   </div>
@@ -206,8 +206,8 @@ export default function SitesManagement() {
             ) : (
               <div className="text-center py-8">
                 <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No hay sitios configurados</p>
-                <p className="text-gray-400 text-sm">Los sitios aparecerán aquí cuando los usuarios los configuren</p>
+                <p className="text-gray-500 dark:text-gray-400 text-lg">No hay sitios configurados</p>
+                <p className="text-gray-400 dark:text-gray-500 text-sm">Los sitios aparecerán aquí cuando los usuarios los configuren</p>
               </div>
             )}
           </CardContent>
@@ -215,7 +215,7 @@ export default function SitesManagement() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Última actualización: {new Date().toLocaleString('es-ES')}
           </p>
         </div>

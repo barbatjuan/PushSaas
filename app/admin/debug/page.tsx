@@ -34,23 +34,23 @@ export default function AdminDebug() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando información de usuario...</p>
+          <p className="text-gray-600 dark:text-gray-400">Cargando información de usuario...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Debug de Usuario</h1>
-            <p className="text-gray-600 mt-2">Información de sesión y usuario actual</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">Debug de Usuario</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Información de sesión y usuario actual</p>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -84,43 +84,43 @@ export default function AdminDebug() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="font-medium text-gray-900">ID de Usuario</p>
-                  <p className="text-sm text-gray-600 font-mono bg-gray-100 p-2 rounded">
+                  <p className="font-medium text-gray-900 dark:text-slate-100">ID de Usuario</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 font-mono bg-gray-100 dark:bg-gray-900 p-2 rounded">
                     {user?.id || 'N/A'}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="font-medium text-gray-900">Email Principal</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Email Principal</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {user?.emailAddresses[0]?.emailAddress || 'N/A'}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="font-medium text-gray-900">Nombre</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Nombre</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {user?.firstName || 'N/A'} {user?.lastName || ''}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="font-medium text-gray-900">Username</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Username</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {user?.username || 'N/A'}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="font-medium text-gray-900">Creado</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Creado</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {user?.createdAt ? new Date(user.createdAt).toLocaleString('es-ES') : 'N/A'}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="font-medium text-gray-900">Última Actualización</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Última Actualización</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {user?.updatedAt ? new Date(user.updatedAt).toLocaleString('es-ES') : 'N/A'}
                   </p>
                 </div>
@@ -143,13 +143,13 @@ export default function AdminDebug() {
                 {user.emailAddresses.map((email, index) => (
                   <div key={index} className="flex justify-between items-center p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">{email.emailAddress}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{email.emailAddress}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {email.verification?.status === 'verified' ? '✅ Verificado' : '❌ No verificado'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         ID: {email.id.slice(-8)}
                       </p>
                     </div>
@@ -173,8 +173,8 @@ export default function AdminDebug() {
           <CardContent>
             <div className="space-y-2">
               <div className="p-3 border rounded-lg">
-                <p className="font-medium text-gray-900">Admin Password</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-gray-900 dark:text-slate-100">Admin Password</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {typeof window !== 'undefined' && sessionStorage.getItem('admin_password') ? 
                     '✅ Configurado' : '❌ No configurado'}
                 </p>
@@ -189,7 +189,7 @@ export default function AdminDebug() {
             <CardTitle>Objeto Usuario Completo (Raw)</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="text-xs bg-gray-100 p-4 rounded-lg overflow-auto max-h-96">
+            <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-4 rounded-lg overflow-auto max-h-96 text-gray-800 dark:text-gray-200">
               {JSON.stringify(user, null, 2)}
             </pre>
           </CardContent>
