@@ -26,13 +26,9 @@ export async function GET(request: NextRequest) {
       console.error('Error checking admin role from DB:', e)
     }
 
-    // 2) Fallback: ADMIN_PASSWORD
+    // Require admin via Clerk/DB only (no legacy password fallback)
     if (!isAdmin) {
-      const adminPassword = request.headers.get('x-admin-password') || 
-                           new URL(request.url).searchParams.get('admin_password')
-      if (!adminPassword || adminPassword !== process.env.ADMIN_PASSWORD) {
-        return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-      }
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
     // Get current date for time-based queries

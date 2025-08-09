@@ -63,25 +63,19 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState('')
 
   const fetchStats = async () => {
     try {
       setRefreshing(true)
-      const adminPassword = sessionStorage.getItem('admin_password')
-      
-      if (!adminPassword) {
-        window.location.href = '/admin/login'
-        return
-      }
-      
-      const response = await fetch(`/api/admin/stats?admin_password=${encodeURIComponent(adminPassword)}`)
+      setError('')
+      const response = await fetch(`/api/admin/stats`)
       if (response.ok) {
         const data = await response.json()
         setStats(data)
-      } else if (response.status === 403) {
-        // Invalid admin password, redirect to login
-        sessionStorage.removeItem('admin_password')
-        window.location.href = '/admin/login'
+      } else if (response.status === 401 || response.status === 403) {
+        setError('No autorizado: inicia sesión con una cuenta admin')
+        setStats(null)
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -108,7 +102,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading dashboard</h2>
-          <p className="text-gray-600 mb-4">Unable to fetch dashboard statistics</p>
+          <p className="text-gray-600 mb-4">{error || 'Unable to fetch dashboard statistics'}</p>
           <Button onClick={fetchStats}>Try Again</Button>
         </div>
       </div>

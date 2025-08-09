@@ -6,6 +6,11 @@ const isProtectedRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware((auth, req) => {
+  const { pathname } = req.nextUrl
+  // Permitir páginas de login y debug del admin sin protección para evitar bucles
+  if (pathname.startsWith('/admin/login') || pathname.startsWith('/admin/debug')) {
+    return
+  }
   if (isProtectedRoute(req)) auth().protect()
 })
 
