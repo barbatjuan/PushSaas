@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { Database } from '@/lib/database.types'
 
 type Notification = Database['public']['Tables']['notifications']['Row'] & {
-  sites: { name: string } | null
+  site_name?: string | null
 }
 
 export default function NotificationsPage() {
@@ -38,18 +38,32 @@ export default function NotificationsPage() {
           return
         }
 
-        // Get notifications for user's sites
-        const { data, error } = await supabase
+        // Get notifications for user's sites (no FK join)
+        const { data: notifications, error } = await supabase
           .from('notifications')
-          .select(`
-            *,
-            sites!inner(name)
-          `)
+          .select('*')
           .in('site_id', siteIds)
           .order('created_at', { ascending: false })
 
         if (error) throw error
-        setNotifications(data || [])
+
+        // Fetch site names and compose
+        const { data: siteRows } = await supabase
+          .from('sites')
+          .select('id, name')
+          .in('id', siteIds)
+
+        const nameById: Record<string, string> = {}
+        for (const s of siteRows || []) {
+          nameById[s.id] = s.name || 'Unknown Site'
+        }
+
+        const enriched = (notifications || []).map(n => ({
+          ...n,
+          site_name: nameById[n.site_id] || 'Unknown Site'
+        }))
+
+        setNotifications(enriched)
       } catch (error) {
         console.error('Error fetching notifications:', error)
       } finally {
@@ -158,7 +172,7 @@ export default function NotificationsPage() {
                       {notification.message}
                     </CardDescription>
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-[#9aa5ce]">
-                      <span>Sitio: {notification.sites?.name}</span>
+                      <span>Sitio: {notification.site_name || 'Unknown Site'}</span>
                       <span>•</span>
                       <span>{formatDate(notification.created_at)}</span>
                       {notification.sent_at && (

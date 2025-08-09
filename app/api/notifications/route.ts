@@ -245,13 +245,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([])
     }
 
-    // Get notifications for user's sites
+    // Get notifications for user's sites (no FK join)
     const { data: notifications, error: notificationsError } = await supabaseAdmin
       .from('notifications')
-      .select(`
-        *,
-        sites!inner(name)
-      `)
+      .select('*, site_id')
       .in('site_id', siteIds)
       .order('created_at', { ascending: false })
 
@@ -260,7 +257,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Error fetching notifications' }, { status: 500 })
     }
 
-    return NextResponse.json(notifications)
+    // Map site_id -> site name
+    const { data: siteNames } = await supabaseAdmin
+      .from('sites')
+      .select('id, name')
+      .in('id', siteIds)
+
+    const nameById: Record<string, string> = {}
+    for (const s of siteNames || []) {
+      nameById[s.id] = s.name || 'Unknown Site'
+    }
+
+    const enriched = (notifications || []).map(n => ({
+      ...n,
+      sites: { name: nameById[n.site_id] || 'Unknown Site' }
+    }))
+
+    return NextResponse.json(enriched)
   } catch (error) {
     console.error('Error in notifications GET API:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -113,18 +113,10 @@ export async function GET(request: NextRequest) {
       topSites: sitesWithSubscribers
     }
 
-    // 4. NOTIFICATION STATISTICS
+    // 4. NOTIFICATION STATISTICS (no FK joins)
     const { data: allNotifications, error: notificationsError } = await supabaseAdmin
       .from('notifications')
-      .select(`
-        id, 
-        title, 
-        sent_count, 
-        delivered_count, 
-        clicked_count, 
-        created_at,
-        sites!inner(name)
-      `)
+      .select('id, title, sent_count, delivered_count, clicked_count, created_at, site_id')
       .order('created_at', { ascending: false })
 
     if (notificationsError) throw notificationsError
@@ -145,12 +137,18 @@ export async function GET(request: NextRequest) {
     const clickRate = totalDelivered > 0 ? (totalClicked / totalDelivered) * 100 : 0
 
     // Recent notification activity
+    // Map site_id -> site name from allSites
+    const siteNameById: Record<string, string> = {}
+    for (const s of allSites) {
+      siteNameById[s.id] = s.name || 'Unknown Site'
+    }
+
     const recentActivity = allNotifications
       .slice(0, 10)
       .map(n => ({
         id: n.id,
         title: n.title,
-        siteName: n.sites?.[0]?.name || 'Unknown Site',
+        siteName: siteNameById[n.site_id] || 'Unknown Site',
         sentCount: n.sent_count || 0,
         clickedCount: n.clicked_count || 0,
         createdAt: n.created_at
