@@ -8,6 +8,8 @@ const nextConfig = {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY,
     VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
+    // Temporarily disable proxy if not verified
+    CLERK_PROXY_URL: process.env.NODE_ENV === 'development' ? process.env.CLERK_PROXY_URL : undefined,
   },
 }
 
