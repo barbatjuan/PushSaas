@@ -43,6 +43,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Evitar interceptar peticiones de terceros y de Clerk
+  try {
+    const url = new URL(event.request.url);
+    // Si no es mismo origen, dejar que el navegador maneje la request
+    if (url.origin !== self.location.origin) {
+      return;
+    }
+    // También evitamos cualquier ruta que empiece por /npm/@clerk o similares servidas vía CDN
+    if (url.pathname.startsWith('/npm/@clerk')) {
+      return;
+    }
+  } catch (e) {
+    // Si falla el parseo de URL, no interceptar
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
