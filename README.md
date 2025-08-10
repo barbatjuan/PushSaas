@@ -2,6 +2,8 @@
 
 Una plataforma SaaS white-label para que pequeños negocios puedan reconectar con visitantes de su sitio web mediante notificaciones push.
 
+*Force redeploy - fixing Clerk domain issue*
+
 ## 🛠️ Stack Tecnológico
 
 - **Frontend**: Next.js 14 + React + TypeScript
