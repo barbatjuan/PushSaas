@@ -94,7 +94,7 @@ export default function SimpleAdminDashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">Dashboard Administrativo</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">Resumen general de PushSaaS</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Resumen general de NotiFly</p>
           </div>
           <Button 
             onClick={fetchStats} 

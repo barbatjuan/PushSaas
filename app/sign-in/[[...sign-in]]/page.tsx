@@ -10,7 +10,7 @@ export default function Page() {
               Iniciar Sesión
             </h1>
             <p className="text-gray-600 dark:text-[#9aa5ce]">
-              Accede a tu cuenta de PushSaaS
+              Accede a tu cuenta de NotiFly
             </p>
           </div>
           <SignIn 

@@ -80,7 +80,7 @@ export default function DashboardLayout({
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Zap className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-[#c0caf5] dark:to-[#a9b1d6] bg-clip-text text-transparent">PushSaaS</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-[#c0caf5] dark:to-[#a9b1d6] bg-clip-text text-transparent">NotiFly</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">

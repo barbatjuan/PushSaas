@@ -1,6 +1,6 @@
 {
-  "name": "PushSaaS - Notificaciones Push",
-  "short_name": "PushSaaS",
+  "name": "NotiFly - Notificaciones Push",
+  "short_name": "NotiFly",
   "description": "Plataforma SaaS de notificaciones push web para negocios pequeños. Recupera clientes que visitaron tu sitio pero no compraron.",
   "start_url": "/",
   "id": "/",

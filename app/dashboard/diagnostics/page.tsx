@@ -409,7 +409,7 @@ export default function DiagnosticsPage() {
               console.log('🌐 Online:', navigator.onLine)
               console.log('📍 Location:', location.href)
               if ((window as any).pushSaaS) {
-                console.log('🚀 PushSaaS Status:', (window as any).pushSaaS.debug?.status?.())
+                console.log('🚀 NotiFly Status:', (window as any).pushSaaS.debug?.status?.())
               }
             }}
             variant="outline"

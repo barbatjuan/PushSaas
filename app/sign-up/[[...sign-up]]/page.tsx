@@ -10,7 +10,7 @@ export default function Page() {
               Crear Cuenta
             </h1>
             <p className="text-gray-600 dark:text-[#9aa5ce]">
-              Únete a PushSaaS y comienza a reconectar con tus visitantes
+              Únete a NotiFly y comienza a reconectar con tus visitantes
             </p>
           </div>
           <SignUp 

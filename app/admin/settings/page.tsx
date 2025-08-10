@@ -82,7 +82,7 @@ export default function AdminSettings() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-cyan-400">Configuración del Sistema</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">Estado y configuración de PushSaaS</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Estado y configuración de NotiFly</p>
           </div>
           <Button 
             onClick={fetchSystemInfo} 
@@ -214,7 +214,7 @@ export default function AdminSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="font-medium text-gray-900 dark:text-slate-100">Versión</p>
-                <p className="text-gray-600 dark:text-gray-400">PushSaaS v1.0.0</p>
+                <p className="text-gray-600 dark:text-gray-400">NotiFly v1.0.0</p>
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-slate-100">Framework</p>

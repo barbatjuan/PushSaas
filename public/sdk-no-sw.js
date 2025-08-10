@@ -1,7 +1,7 @@
 (function() {
   'use strict';
   
-  console.log('🚀 PushSaaS SDK (No Service Worker) Loading...');
+  console.log('🚀 NotiFly SDK (No Service Worker) Loading...');
   
   // Configuration
   const API_BASE_URL = 'https://web-push-notifications-phi.vercel.app/api';
@@ -143,5 +143,5 @@
     document.body.appendChild(promptDiv);
   }
   
-  console.log('✅ PushSaaS SDK (No Service Worker) Loaded');
+  console.log('✅ NotiFly SDK (No Service Worker) Loaded');
 })();

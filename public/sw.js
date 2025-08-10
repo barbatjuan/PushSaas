@@ -1,4 +1,4 @@
-// Service Worker para PushSaaS
+// Service Worker para NotiFly
 // Maneja notificaciones push y funcionalidad PWA
 
 const CACHE_NAME = 'pushsaas-v1';
@@ -70,13 +70,13 @@ self.addEventListener('push', (event) => {
     console.log('[SW] Error parsing push data:', e);
     notificationData = {
       title: 'Nueva notificación',
-      body: 'Tienes una nueva notificación de PushSaaS',
+      body: 'Tienes una nueva notificación de NotiFly',
       icon: '/icon-192.png',
       badge: '/icon-192.png'
     };
   }
 
-  const title = notificationData.title || 'PushSaaS';
+  const title = notificationData.title || 'NotiFly';
   const options = {
     body: notificationData.body || 'Nueva notificación disponible',
     icon: notificationData.icon || '/icon-192.png',

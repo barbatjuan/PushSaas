@@ -1,5 +1,5 @@
 /**
- * PushSaaS SDK - Native Web Push API Implementation
+ * NotiFly SDK - Native Web Push API Implementation
  * No external dependencies - Pure Web Push API + VAPID
  */
 (function() {
@@ -13,15 +13,15 @@
   // Force correct site ID for webcoders.es (temporary fix)
   if (window.location.hostname === 'webcoders.es' || siteId === '34c91fe84b42') {
     siteId = 'c670c8bcd133';
-    console.log('🔧 PushSaaS: Corrected site ID for webcoders.es');
+    console.log('🔧 NotiFly: Corrected site ID for webcoders.es');
   }
   
   if (!siteId) {
-    console.error('PushSaaS SDK: data-site attribute is required');
+    console.error('NotiFly SDK: data-site attribute is required');
     return;
   }
 
-  console.log('🚀 PushSaaS SDK: Initializing for site:', siteId);
+  console.log('🚀 NotiFly SDK: Initializing for site:', siteId);
   
   // Enhanced device detection - Support ALL devices
   const isAndroid = /Android/.test(navigator.userAgent);
@@ -37,16 +37,16 @@
   const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
   const notificationPermission = hasNotificationAPI ? Notification.permission : 'no-api';
   
-  console.log(`📱 PushSaaS Debug: Android: ${isAndroid} | Desktop: ${isDesktop} | Mobile: ${isMobile} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
+  console.log(`📱 NotiFly Debug: Android: ${isAndroid} | Desktop: ${isDesktop} | Mobile: ${isMobile} | PWA: ${isInStandaloneMode} | Perm: ${notificationPermission}`);
   
   // Check if notifications are supported
   if (!hasNotificationAPI) {
-    console.log('❌ PushSaaS: Notification API not supported in this browser');
+    console.log('❌ NotiFly: Notification API not supported in this browser');
     showDebugAlert('❌ Tu navegador no soporta notificaciones push', 5000);
     return;
   }
   
-  console.log('✅ PushSaaS: Notification API available, proceeding with initialization');
+  console.log('✅ NotiFly: Notification API available, proceeding with initialization');
 
   // State
   let isInitialized = false;
@@ -90,7 +90,7 @@
     const isChrome = /Chrome/.test(navigator.userAgent);
     const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
     
-    console.log('🤖 PushSaaS Android PWA Check:', { isAndroid, isChrome, isInStandaloneMode });
+    console.log('🤖 NotiFly Android PWA Check:', { isAndroid, isChrome, isInStandaloneMode });
     
     return isAndroid && isChrome && !isInStandaloneMode;
   }
@@ -99,7 +99,7 @@
     // Check if user has already dismissed the PWA prompt
     const pwaPromptDismissed = localStorage.getItem('pushsaas-android-pwa-dismissed');
     if (pwaPromptDismissed) {
-      console.log('🤖 PushSaaS: Android PWA prompt previously dismissed');
+      console.log('🤖 NotiFly: Android PWA prompt previously dismissed');
       return false;
     }
 
