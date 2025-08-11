@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/clerk/(.*)", "destination": "https://api.clerk.dev/$1" }
+    { "source": "/clerk/v1/(.*)", "destination": "https://api.clerk.com/v1/$1" },
+    { "source": "/clerk/npm/(.*)", "destination": "https://cdn.clerk.com/npm/$1" }
   ],
   "headers": [
     {
