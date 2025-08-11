@@ -31,8 +31,8 @@ async function handleClerkProxy(request: NextRequest) {
   // Remove /__clerk from the path
   const clerkPath = pathSegments.slice(2).join('/')
   
-  // Construct the target URL for Clerk's Frontend API
-  const clerkApiUrl = `https://frontend-api.clerk.services/${clerkPath}${url.search}`
+  // Construct the target URL against Clerk custom domain (serves /npm and other assets)
+  const clerkApiUrl = `https://clerk.adioswifi.es/${clerkPath}${url.search}`
   
   try {
     // Forward the request to Clerk's Frontend API
@@ -40,7 +40,6 @@ async function handleClerkProxy(request: NextRequest) {
       method: request.method,
       headers: {
         ...Object.fromEntries(request.headers.entries()),
-        'Host': 'frontend-api.clerk.services',
       },
       body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined,
     })
