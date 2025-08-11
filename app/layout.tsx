@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
+import dynamic from 'next/dynamic'
 import './globals.css'
 
 // Trigger deploy
@@ -15,18 +15,23 @@ export const metadata: Metadata = {
   description: 'White-label push notifications platform for small businesses',
 }
 
+const ClerkProviderNoSSR = dynamic(
+  () => import('@clerk/nextjs').then((mod) => mod.ClerkProvider),
+  { ssr: false }
+)
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider 
+    <ClerkProviderNoSSR 
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
       <html lang="en">
         <body className={inter.className}>{children}</body>
       </html>
-    </ClerkProvider>
+    </ClerkProviderNoSSR>
   )
 }
