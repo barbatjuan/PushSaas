@@ -30,9 +30,13 @@ async function handleClerkProxy(request: NextRequest) {
   
   // Remove /__clerk from the path
   const clerkPath = pathSegments.slice(2).join('/')
-  
-  // Construct the target URL against Clerk custom domain (serves /npm and other assets)
-  const clerkApiUrl = `https://clerk.adioswifi.es/${clerkPath}${url.search}`
+
+  // Route assets to Clerk CDN and API calls to Frontend API
+  const isAsset = clerkPath.startsWith('npm/') || clerkPath.startsWith('v/') || clerkPath.includes('.js') || clerkPath.includes('.css') || clerkPath.includes('.map')
+  const targetBase = isAsset
+    ? 'https://cdn.clerk.com'
+    : 'https://frontend-api.clerk.services'
+  const clerkApiUrl = `${targetBase}/${clerkPath}${url.search}`
   
   try {
     // Forward the request to Clerk's Frontend API
