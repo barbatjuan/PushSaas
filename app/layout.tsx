@@ -23,6 +23,8 @@ export default function RootLayout({
   return (
     <ClerkProvider 
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      domain=""
+      isSatellite={false}
     >
       <html lang="en">
         <body className={inter.className}>{children}</body>
