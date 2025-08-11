@@ -15,7 +15,7 @@ export default clerkMiddleware((auth, req) => {
   }
 
   // No interceptar el proxy de Clerk
-  if (pathname.startsWith('/__clerk')) {
+  if (pathname.startsWith('/api/__clerk')) {
     return
   }
 
@@ -32,5 +32,5 @@ export default clerkMiddleware((auth, req) => {
 
 export const config = {
   // Excluir clerk proxy, _next y archivos estáticos
-  matcher: ['/((?!.*\\..*|_next|__clerk).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api(?!/__clerk)|trpc)(.*)'],
 }

@@ -1,15 +1,4 @@
 {
-  "rewrites": [
-    { 
-      "source": "/__clerk/(.*)", 
-      "destination": "https://frontend-api.clerk.dev/$1",
-      "headers": {
-        "Clerk-Proxy-Url": "https://adioswifi.es/__clerk",
-        "Clerk-Secret-Key": "$CLERK_SECRET_KEY",
-        "X-Forwarded-For": "$remote_addr"
-      }
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
