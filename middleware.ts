@@ -14,10 +14,7 @@ export default clerkMiddleware((auth, req) => {
     return
   }
 
-  // No interceptar el rewrite de Clerk
-  if (pathname.startsWith('/clerk')) {
-    return
-  }
+
 
   // Bloquear registro si está activado por variable de entorno
   if (disableSignups && pathname.startsWith('/sign-up')) {
@@ -30,6 +27,6 @@ export default clerkMiddleware((auth, req) => {
 })
 
 export const config = {
-  // Excluir clerk rewrite, _next y archivos estáticos
-  matcher: ['/((?!.*\\..*|_next|clerk).*)', '/', '/(api|trpc)(.*)'],
+  // Excluir _next y archivos estáticos
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 }

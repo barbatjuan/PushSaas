@@ -1,8 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/clerk/v1/(.*)", "destination": "https://api.clerk.com/v1/$1" },
-    { "source": "/clerk/npm/(.*)", "destination": "https://cdn.clerk.com/npm/$1" }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -19,14 +15,6 @@
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization"
         }
-      ]
-    },
-    {
-      "source": "/clerk/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
       ]
     }
   ]
