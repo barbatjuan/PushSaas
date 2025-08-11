@@ -37,6 +37,7 @@ export default function HomePage() {
   }, [user, isLoaded, router])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const handleScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -44,6 +45,7 @@ export default function HomePage() {
 
   // Initialize theme from localStorage or system, and keep <html> in sync
   useEffect(() => {
+    if (typeof window === 'undefined') return
     try {
       const stored = localStorage.getItem('theme')
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -56,6 +58,7 @@ export default function HomePage() {
   }, [])
 
   const toggleDark = () => {
+    if (typeof window === 'undefined') return
     const next = !isDark
     setIsDark(next)
     document.documentElement.classList.toggle('dark', next)
