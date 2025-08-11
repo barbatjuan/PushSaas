@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
+// Trigger deploy
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
