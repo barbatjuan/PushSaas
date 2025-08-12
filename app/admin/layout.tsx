@@ -1,4 +1,4 @@
-import { currentUser } from '@clerk/nextjs/server';
+import { currentUser } from '@/lib/server-auth';
 import { redirect } from 'next/navigation';
 
 // Import supabaseAdmin lazily inside the component to avoid crashing
@@ -20,11 +20,11 @@ export default async function AdminLayout({
     user = await currentUser()
   } catch (e) {
     console.error('Error calling currentUser in admin layout:', e)
-    redirect('/sign-in')
+    redirect('/auth/sign-in')
   }
   
   if (!user) {
-    redirect('/sign-in')
+    redirect('/auth/sign-in')
   }
 
   // Debugging: Log the user's public metadata to see what the server receives
@@ -37,7 +37,7 @@ export default async function AdminLayout({
     const { data: dbUser, error } = await supabaseAdmin
       .from('users')
       .select('role')
-      .eq('clerk_id', user.id)
+      .eq('supabase_user_id', user.id)
       .single()
     if (!error && dbUser?.role === 'admin') {
       isAdmin = true

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser } from '@/lib/server-auth'
  
  // This route reads request headers; ensure it's treated as dynamic
  export const dynamic = 'force-dynamic'
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 1) Prefer DB role check using Clerk user
+    // 1) Prefer DB role check using Supabase user
     let isAdmin = false
     try {
       const { createClient } = await import('@supabase/supabase-js')
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       const { data: dbUser, error } = await supabaseAdmin
         .from('users')
         .select('role')
-        .eq('clerk_id', user.id)
+        .eq('supabase_user_id', user.id)
         .single()
       if (!error && dbUser?.role === 'admin') {
         isAdmin = true

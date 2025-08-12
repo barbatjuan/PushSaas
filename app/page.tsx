@@ -1,9 +1,9 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
 import {
   Bell,
   Users,
@@ -24,17 +24,17 @@ import {
 } from 'lucide-react'
 
 export default function HomePage() {
-  const { user, isLoaded } = useUser()
+  const { user } = useAuth()
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
-    if (isLoaded && user) {
+    if (user) {
       router.push('/dashboard')
     }
-  }, [user, isLoaded, router])
+  }, [user, router])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -65,9 +65,7 @@ export default function HomePage() {
     try { localStorage.setItem('theme', next ? 'dark' : 'light') } catch (_) {}
   }
 
-  if (!isLoaded) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
-  }
+  // No hard loading here; landing is public.
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
@@ -97,7 +95,7 @@ export default function HomePage() {
               <button onClick={toggleDark} aria-label="Cambiar tema" className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              <Link href="/sign-in" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 hover:dark:text-white transition-colors font-medium">Iniciar Sesión</Link>
+              <Link href="/auth/sign-in" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 hover:dark:text-white transition-colors font-medium">Iniciar Sesión</Link>
               <Link href="/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">Comenzar Gratis</Link>
             </div>
 
@@ -148,11 +146,8 @@ export default function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link href="/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl flex items-center justify-center space-x-2 group">
-                  <span>Comenzar Gratis</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link href="/sign-in" className="border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-8 py-4 rounded-2xl text-lg font-semibold hover:border-blue-600 hover:text-blue-600 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
+                <Link href="/auth/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">Comenzar Gratis</Link>
+                <Link href="/auth/sign-in" className="border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-8 py-4 rounded-2xl text-lg font-semibold hover:border-blue-600 hover:text-blue-600 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
                   <Play className="w-5 h-5" />
                   <span>Iniciar Sesión</span>
                 </Link>
@@ -364,7 +359,7 @@ export default function HomePage() {
           <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">¿Listo para Recuperar tus Ventas Perdidas?</h3>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">Únete a miles de negocios que ya están convirtiendo más visitantes en clientes</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl">Comenzar Gratis Ahora</Link>
+            <Link href="/auth/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl">Comenzar Gratis Ahora</Link>
             <div className="text-sm text-gray-500 dark:text-gray-400">Sin tarjeta de crédito • Setup en 5 minutos</div>
           </div>
         </div>

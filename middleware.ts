@@ -1,30 +1,29 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import type { NextRequest } from 'next/server'
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/admin(.*)'
-])
-
-export default clerkMiddleware((auth, req) => {
+// Middleware pas-through sin Clerk.
+export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const disableSignups = process.env.DISABLE_SIGNUPS === 'true'
 
-  // Permitir páginas de login y debug del admin sin protección para evitar bucles
-  if (pathname.startsWith('/admin/login') || pathname.startsWith('/admin/debug')) {
-    return
-  }
-
-  // Bloquear registro si está activado por variable de entorno
-  if (disableSignups && pathname.startsWith('/sign-up')) {
+  // Redirigir antiguo path de Clerk a nuestras nuevas rutas
+  if (pathname.startsWith('/sign-in')) {
     const url = req.nextUrl.clone()
-    url.pathname = '/sign-in'
+    url.pathname = '/auth/sign-in'
+    return Response.redirect(url)
+  }
+  if (pathname.startsWith('/sign-up')) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/auth/sign-up'
     return Response.redirect(url)
   }
 
-  if (isProtectedRoute(req)) auth().protect()
-})
+  if (disableSignups && pathname.startsWith('/auth/sign-up')) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/auth/sign-in'
+    return Response.redirect(url)
+  }
+}
 
 export const config = {
-  // Excluir _next y archivos estáticos
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 }

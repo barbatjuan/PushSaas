@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser } from '@/lib/server-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       const { data: dbUser, error } = await supabaseAdmin
         .from('users')
         .select('role')
-        .eq('clerk_id', user.id)
+        .eq('supabase_user_id', user.id)
         .single()
       if (!error && dbUser?.role === 'admin') {
         isAdmin = true
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest) {
     const { data: dbUser, error: userError } = await supabaseAdmin
       .from('users')
       .select('role')
-      .eq('clerk_id', user.id)
+      .eq('supabase_user_id', user.id)
       .single()
 
     if (userError || !dbUser || dbUser.role !== 'admin') {

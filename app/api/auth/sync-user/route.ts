@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser } from '@/lib/server-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
@@ -7,17 +7,17 @@ export const revalidate = 0
 
 export async function POST(_req: NextRequest) {
   try {
-    const clerk = await currentUser()
-    if (!clerk) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await currentUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const email = clerk.emailAddresses[0]?.emailAddress || ''
+    const email = user.email || ''
     if (!email) return NextResponse.json({ error: 'No email' }, { status: 400 })
 
-    // 1) Try to find by clerk_id
+    // 1) Try to find by supabase_user_id
     const { data: byClerk, error: byClerkErr } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('clerk_id', clerk.id)
+      .eq('supabase_user_id', user.id)
       .maybeSingle()
 
     if (byClerk && !byClerkErr) {
@@ -38,7 +38,7 @@ export async function POST(_req: NextRequest) {
     if (byEmail) {
       const { data: updated, error: updateErr } = await supabaseAdmin
         .from('users')
-        .update({ clerk_id: clerk.id, name: byEmail.name || clerk.fullName || email })
+        .update({ supabase_user_id: user.id, name: byEmail.name || (user.user_metadata as any)?.name || email })
         .eq('id', byEmail.id)
         .select('*')
         .single()
@@ -47,14 +47,14 @@ export async function POST(_req: NextRequest) {
       return NextResponse.json({ linked: true, user: updated })
     }
 
-    // 3) Create new if none exists; set role from Clerk metadata if present
-    const roleFromMetadata = (clerk.publicMetadata as any)?.role === 'admin' ? 'admin' : 'user'
+    // 3) Create new if none exists; set role from user metadata if present
+    const roleFromMetadata = (user.user_metadata as any)?.role === 'admin' ? 'admin' : 'user'
     const { data: created, error: createErr } = await supabaseAdmin
       .from('users')
       .insert({
-        clerk_id: clerk.id,
+        supabase_user_id: user.id,
         email,
-        name: clerk.fullName,
+        name: (user.user_metadata as any)?.name || email,
         role: roleFromMetadata,
         plan: 'free',
       })

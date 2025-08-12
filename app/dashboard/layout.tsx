@@ -1,17 +1,19 @@
 'use client'
 
-import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Bell, BarChart3, Settings, Plus, Home, Zap, Users, TrendingUp, Moon, Sun, Wrench } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth-context'
+import RequireAuth from '@/components/RequireAuth'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { user, signOut } = useAuth()
   const pathname = usePathname()
   const [isDarkMode, setIsDarkMode] = useState(false)
 
@@ -70,6 +72,7 @@ export default function DashboardLayout({
   ]
 
   return (
+    <RequireAuth>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#1a1b26] dark:via-[#1f2335] dark:to-[#24283b] transition-colors duration-300">
       {/* Header */}
       <header className="bg-white/80 dark:bg-[#1a1b26]/90 backdrop-blur-md border-b border-gray-200/50 dark:border-[#414868]/30 sticky top-0 z-50 transition-colors duration-300">
@@ -100,14 +103,14 @@ export default function DashboardLayout({
                   <Moon className="h-4 w-4 text-gray-600 dark:text-[#a9b1d6]" />
                 )}
               </Button>
-              <UserButton 
-                afterSignOutUrl="/" 
-                appearance={{
-                  elements: {
-                    avatarBox: 'w-8 h-8 ring-2 ring-blue-500/20 hover:ring-blue-500/40 transition-all duration-200'
-                  }
-                }}
-              />
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-blue-600 rounded-full text-white flex items-center justify-center text-sm">
+                  {(user?.email?.[0] || 'U').toUpperCase()}
+                </div>
+                <Button variant="outline" size="sm" onClick={() => signOut()}>
+                  Cerrar sesión
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -164,5 +167,6 @@ export default function DashboardLayout({
         </div>
       </div>
     </div>
+    </RequireAuth>
   )
 }

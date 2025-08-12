@@ -1,13 +1,12 @@
 'use client'
 
-import { useUser, useAuth } from '@clerk/nextjs'
+import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, User, Key, Database } from 'lucide-react'
 
 export default function AdminDebug() {
-  const { user, isLoaded } = useUser()
-  const { signOut } = useAuth()
+  const { user, loading, signOut } = useAuth()
 
   const handleClearCache = () => {
     // Clear all relevant caches
@@ -26,13 +25,13 @@ export default function AdminDebug() {
   const handleForceSignOut = async () => {
     try {
       await signOut()
-      window.location.href = '/admin/login'
+      window.location.href = '/auth/sign-in'
     } catch (error) {
       console.error('Error signing out:', error)
     }
   }
 
-  if (!isLoaded) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
@@ -93,35 +92,35 @@ export default function AdminDebug() {
                 <div>
                   <p className="font-medium text-gray-900 dark:text-slate-100">Email Principal</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.emailAddresses[0]?.emailAddress || 'N/A'}
+                    {user?.email || 'N/A'}
                   </p>
                 </div>
                 
                 <div>
                   <p className="font-medium text-gray-900 dark:text-slate-100">Nombre</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.firstName || 'N/A'} {user?.lastName || ''}
+                    {user?.user_metadata?.full_name || user?.email || 'N/A'}
                   </p>
                 </div>
                 
                 <div>
                   <p className="font-medium text-gray-900 dark:text-slate-100">Username</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.username || 'N/A'}
+                    {user?.user_metadata?.user_name || 'N/A'}
                   </p>
                 </div>
                 
                 <div>
                   <p className="font-medium text-gray-900 dark:text-slate-100">Creado</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleString('es-ES') : 'N/A'}
+                    {user?.created_at ? new Date(user.created_at).toLocaleString('es-ES') : 'N/A'}
                   </p>
                 </div>
                 
                 <div>
                   <p className="font-medium text-gray-900 dark:text-slate-100">Última Actualización</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {user?.updatedAt ? new Date(user.updatedAt).toLocaleString('es-ES') : 'N/A'}
+                    {user?.updated_at ? new Date(user.updated_at).toLocaleString('es-ES') : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -138,23 +137,19 @@ export default function AdminDebug() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {user?.emailAddresses && user.emailAddresses.length > 0 ? (
+            {user?.email ? (
               <div className="space-y-2">
-                {user.emailAddresses.map((email, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-slate-100">{email.emailAddress}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {email.verification?.status === 'verified' ? '✅ Verificado' : '❌ No verificado'}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        ID: {email.id.slice(-8)}
-                      </p>
-                    </div>
+                <div className="flex justify-between items-center p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">{user.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Estado: N/D</p>
                   </div>
-                ))}
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      ID: {String(user.id).slice(-8)}
+                    </p>
+                  </div>
+                </div>
               </div>
             ) : (
               <p className="text-gray-500">No hay direcciones de email</p>

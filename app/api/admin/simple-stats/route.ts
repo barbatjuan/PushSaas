@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser } from '@/lib/server-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
 // Esta ruta debe ser dinámica porque usa headers()
@@ -15,13 +15,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 1) Prefer DB role check using Clerk user
+    // 1) Prefer DB role check using Supabase user
     let isAdmin = false
     try {
       const { data: dbUser, error } = await supabaseAdmin
         .from('users')
         .select('role')
-        .eq('clerk_id', user.id)
+        .eq('supabase_user_id', user.id)
         .single()
       if (!error && dbUser?.role === 'admin') {
         isAdmin = true

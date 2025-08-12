@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { currentUser } from '@/lib/server-auth';
 import { createClient } from '@supabase/supabase-js';
 import { getWebPush } from '@/lib/webpush';
 
@@ -26,9 +26,19 @@ interface NotificationPayload {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const { userId } = auth();
-    if (!userId) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Resolve internal DB user by Supabase user id
+    const { data: dbUser, error: dbUserError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('supabase_user_id', user.id)
+      .single();
+    if (dbUserError || !dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -55,7 +65,7 @@ export async function POST(request: NextRequest) {
       .from('sites')
       .select('id, name, domain')
       .eq('id', siteId)
-      .eq('user_id', userId)
+      .eq('user_id', dbUser.id)
       .single();
 
     if (siteError || !site) {
@@ -166,7 +176,7 @@ export async function POST(request: NextRequest) {
       .from('notification_logs')
       .insert({
         site_id: siteId,
-        user_id: userId,
+        user_id: dbUser.id,
         notification_data: notificationPayload,
         total_sent: successful,
         total_failed: failed,
@@ -193,9 +203,19 @@ export async function POST(request: NextRequest) {
 // GET endpoint to retrieve notification history
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = auth();
-    if (!userId) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Resolve internal DB user by Supabase user id
+    const { data: dbUser, error: dbUserError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('supabase_user_id', user.id)
+      .single();
+    if (dbUserError || !dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -215,7 +235,7 @@ export async function GET(request: NextRequest) {
       .from('sites')
       .select('id')
       .eq('id', siteId)
-      .eq('user_id', userId)
+      .eq('user_id', dbUser.id)
       .single();
 
     if (siteError || !site) {

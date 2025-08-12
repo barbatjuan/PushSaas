@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser } from '@/lib/server-auth'
 import { supabaseAdmin } from '@/lib/supabase'
+import { getWebPush } from '@/lib/webpush'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     const { data: dbUser, error: userError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('clerk_id', user.id)
+      .eq('supabase_user_id', user.id)
       .single()
 
     if (userError || !dbUser) {
@@ -97,15 +98,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No active push subscriptions found' }, { status: 400 })
     }
 
-    // Send notifications using native web-push
-    const webpush = await import('web-push')
-    
-    // Configure VAPID keys
-    webpush.default.setVapidDetails(
-      'mailto:support@pushsaas.com',
-      process.env.VAPID_PUBLIC_KEY!,
-      process.env.VAPID_PRIVATE_KEY!
-    )
+    // Send notifications using native web-push via DB-managed VAPID keys
+    const webpush = getWebPush()
 
     console.log('🖼️ Site data for notification:', {
       site_id: site.site_id,
@@ -142,14 +136,16 @@ export async function POST(request: NextRequest) {
     let failedCount = 0
 
     // Send to all subscriptions
-    const sendPromises = pushSubscriptions.map(async (sub, index) => {
+    const sendPromises = pushSubscriptions.map(async (sub) => {
       try {
-        console.log(`📤 Sending notification ${index + 1}/${pushSubscriptions.length}`);
-        await webpush.default.sendNotification(sub.subscription_data, payload)
+        const r = await webpush.sendNotification(
+          sub.subscription_data,
+          payload
+        )
         sentCount++
-        console.log(`✅ Notification ${index + 1} sent successfully`);
+        console.log(`✅ Notification sent successfully`);
       } catch (error: any) {
-        console.error(`❌ Failed to send notification ${index + 1}:`, error);
+        console.error(`❌ Failed to send notification:`, error);
         
         // Handle specific error codes
         if (error.statusCode === 410) {

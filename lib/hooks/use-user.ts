@@ -1,17 +1,17 @@
-import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/lib/database.types'
+import { useAuth } from '@/lib/auth-context'
 
 type User = Database['public']['Tables']['users']['Row']
 
 export function useCurrentUser() {
-  const { user: clerkUser, isLoaded } = useUser()
+  const { user: authUser } = useAuth()
   const [dbUser, setDbUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isLoaded || !clerkUser) {
+    if (!authUser) {
       setLoading(false)
       return
     }
@@ -29,14 +29,14 @@ export function useCurrentUser() {
         const { data: existingUser, error } = await supabase
           .from('users')
           .select('*')
-          .eq('clerk_id', clerkUser.id)
+          .eq('supabase_user_id', authUser.id)
           .single()
 
         if (existingUser) {
           setDbUser(existingUser)
         } else if (error?.code === 'PGRST116') {
           // No row by clerk_id. Try to link existing row by email to avoid duplicates and preserve role/plan.
-          const primaryEmail = clerkUser.emailAddresses[0]?.emailAddress || ''
+          const primaryEmail = authUser.email ?? ''
 
           const { data: byEmail, error: emailErr } = await supabase
             .from('users')
@@ -49,8 +49,8 @@ export function useCurrentUser() {
             const { data: updated, error: updateErr } = await supabase
               .from('users')
               .update({
-                clerk_id: clerkUser.id,
-                name: byEmail.name || clerkUser.fullName || byEmail.email,
+                supabase_user_id: authUser.id,
+                name: byEmail.name || authUser.user_metadata?.name || byEmail.email,
               })
               .eq('id', byEmail.id)
               .select('*')
@@ -63,13 +63,13 @@ export function useCurrentUser() {
             }
           } else {
             // Create new user; set role from Clerk metadata if present
-            const roleFromMetadata = (clerkUser.publicMetadata as any)?.role === 'admin' ? 'admin' : 'user'
+            const roleFromMetadata = (authUser.user_metadata as any)?.role === 'admin' ? 'admin' : 'user'
             const { data: newUser, error: createError } = await supabase
               .from('users')
               .insert({
-                clerk_id: clerkUser.id,
+                supabase_user_id: authUser.id,
                 email: primaryEmail,
-                name: clerkUser.fullName,
+                name: (authUser.user_metadata as any)?.name || primaryEmail,
                 role: roleFromMetadata,
                 plan: 'free',
               })
@@ -93,12 +93,11 @@ export function useCurrentUser() {
     }
 
     fetchOrCreateUser()
-  }, [clerkUser, isLoaded])
+  }, [authUser])
 
   return {
     user: dbUser,
-    clerkUser,
-    loading: loading || !isLoaded,
+    loading,
     isAdmin: dbUser?.role === 'admin',
     isPaid: dbUser?.plan === 'paid',
   }

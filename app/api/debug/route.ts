@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser } from '@/lib/server-auth'
 
 export async function GET(request: NextRequest) {
   try {
     // Check environment variables
     const envCheck = {
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-      CLERK_SECRET_KEY: !!process.env.CLERK_SECRET_KEY,
       NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
     }
 
-    // Check Clerk authentication
-    let clerkUser = null
-    let clerkError = null
-    try {
-      clerkUser = await currentUser()
-    } catch (error) {
-      clerkError = error instanceof Error ? error.message : 'Unknown Clerk error'
-    }
+    // Check Supabase authentication
+    const supaUser = await currentUser().catch(() => null)
 
     // Check Supabase connection
     let supabaseCheck = null
@@ -46,9 +38,9 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       envVariables: envCheck,
-      clerk: {
-        user: clerkUser ? { id: clerkUser.id, email: clerkUser.emailAddresses[0]?.emailAddress } : null,
-        error: clerkError
+      auth: {
+        user: supaUser ? { id: supaUser.id, email: supaUser.email } : null,
+        provider: 'supabase'
       },
       supabase: {
         status: supabaseCheck,
