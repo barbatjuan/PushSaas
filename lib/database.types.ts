@@ -12,7 +12,8 @@ export interface Database {
       users: {
         Row: {
           id: string
-          clerk_id: string
+          // Current auth linkage (Supabase Auth user id)
+          supabase_user_id: string
           email: string
           name: string | null
           role: 'user' | 'admin'
@@ -22,7 +23,8 @@ export interface Database {
         }
         Insert: {
           id?: string
-          clerk_id: string
+          // Required: Supabase Auth user id
+          supabase_user_id: string
           email: string
           name?: string | null
           role?: 'user' | 'admin'
@@ -32,7 +34,8 @@ export interface Database {
         }
         Update: {
           id?: string
-          clerk_id?: string
+          // Current auth linkage (Supabase Auth user id)
+          supabase_user_id?: string
           email?: string
           name?: string | null
           role?: 'user' | 'admin'

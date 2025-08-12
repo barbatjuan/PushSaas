@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 CREATE TABLE IF NOT EXISTS notification_logs (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
-    user_id VARCHAR(255) NOT NULL, -- Clerk user ID
+    user_id VARCHAR(255) NOT NULL, -- Auth user ID (Supabase)
     notification_data JSONB NOT NULL,
     total_sent INTEGER DEFAULT 0,
     total_failed INTEGER DEFAULT 0,
@@ -38,7 +38,7 @@ ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notification_logs ENABLE ROW LEVEL SECURITY;
 
 -- First, alter the sites table to change user_id from UUID to TEXT (if it exists)
--- This is needed because Clerk user IDs are strings like 'user_2NxxxxxxxxxXxxx', not UUIDs
+-- Nota: Este bloque existía por compatibilidad con IDs en texto; con Supabase se usa UUID en users.id, mantener solo si tu esquema lo requiere.
 DO $$ 
 BEGIN
     -- Check if sites table exists and has user_id as UUID

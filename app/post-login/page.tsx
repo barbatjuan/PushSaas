@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
-import { currentUser, getSupabaseAdmin } from '@/lib/server-auth'
+import { currentUserSC, getSupabaseAdmin } from '@/lib/server-auth'
 
 export default async function PostLoginRedirect() {
   // Asegura sesión
-  const user = await currentUser()
+  const user = await currentUserSC()
   if (!user) {
     redirect('/auth/sign-in')
   }

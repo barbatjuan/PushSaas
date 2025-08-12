@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    clerk_id TEXT UNIQUE NOT NULL,
+    supabase_user_id TEXT UNIQUE NOT NULL,
     email TEXT NOT NULL,
     name TEXT,
     role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
+CREATE INDEX IF NOT EXISTS idx_users_supabase_user_id ON users(supabase_user_id);
 CREATE INDEX IF NOT EXISTS idx_sites_user_id ON sites(user_id);
 CREATE INDEX IF NOT EXISTS idx_sites_site_id ON sites(site_id);
 CREATE INDEX IF NOT EXISTS idx_subscribers_site_id ON subscribers(site_id);
@@ -137,25 +137,25 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Users can only see their own data
 CREATE POLICY "Users can view own profile" ON users
-    FOR SELECT USING (clerk_id = auth.jwt() ->> 'sub');
+    FOR SELECT USING (supabase_user_id = auth.jwt() ->> 'sub');
 
 CREATE POLICY "Users can update own profile" ON users
-    FOR UPDATE USING (clerk_id = auth.jwt() ->> 'sub');
+    FOR UPDATE USING (supabase_user_id = auth.jwt() ->> 'sub');
 
 -- Sites policies
 CREATE POLICY "Users can view own sites" ON sites
     FOR SELECT USING (user_id IN (
-        SELECT id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+        SELECT id FROM users WHERE supabase_user_id = auth.jwt() ->> 'sub'
     ));
 
 CREATE POLICY "Users can insert own sites" ON sites
     FOR INSERT WITH CHECK (user_id IN (
-        SELECT id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+        SELECT id FROM users WHERE supabase_user_id = auth.jwt() ->> 'sub'
     ));
 
 CREATE POLICY "Users can update own sites" ON sites
     FOR UPDATE USING (user_id IN (
-        SELECT id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+        SELECT id FROM users WHERE supabase_user_id = auth.jwt() ->> 'sub'
     ));
 
 -- Subscribers policies (public read for SDK)
@@ -165,7 +165,7 @@ CREATE POLICY "Public can insert subscribers" ON subscribers
 CREATE POLICY "Users can view subscribers of own sites" ON subscribers
     FOR SELECT USING (site_id IN (
         SELECT site_id FROM sites WHERE user_id IN (
-            SELECT id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+            SELECT id FROM users WHERE supabase_user_id = auth.jwt() ->> 'sub'
         )
     ));
 
@@ -173,18 +173,18 @@ CREATE POLICY "Users can view subscribers of own sites" ON subscribers
 CREATE POLICY "Users can view notifications of own sites" ON notifications
     FOR SELECT USING (site_id IN (
         SELECT id FROM sites WHERE user_id IN (
-            SELECT id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+            SELECT id FROM users WHERE supabase_user_id = auth.jwt() ->> 'sub'
         )
     ));
 
 CREATE POLICY "Users can insert notifications for own sites" ON notifications
     FOR INSERT WITH CHECK (site_id IN (
         SELECT id FROM sites WHERE user_id IN (
-            SELECT id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+            SELECT id FROM users WHERE supabase_user_id = auth.jwt() ->> 'sub'
         )
     ));
 
--- Insert admin user (replace with your actual Clerk ID)
--- INSERT INTO users (clerk_id, email, name, role, plan) 
--- VALUES ('your_clerk_admin_id', 'admin@example.com', 'Admin User', 'admin', 'paid')
--- ON CONFLICT (clerk_id) DO NOTHING;
+-- Example: Insert admin user (using Supabase Auth user id)
+-- INSERT INTO users (supabase_user_id, email, name, role, plan) 
+-- VALUES ('your_supabase_user_id', 'admin@example.com', 'Admin User', 'admin', 'paid')
+-- ON CONFLICT (supabase_user_id) DO NOTHING;

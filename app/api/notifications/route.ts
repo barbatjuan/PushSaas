@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
     const { data: dbUser, error: userError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('clerk_id', user.id)
+      .eq('supabase_user_id', user.id)
       .single()
 
     if (userError || !dbUser) {

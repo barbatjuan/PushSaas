@@ -27,7 +27,7 @@ export function getSupabaseAdmin() {
   )
 }
 
-// Replacement for Clerk's currentUser()
+// currentUser() basado en Supabase Auth
 export async function currentUser() {
   const supabase = await getServerSupabase()
   const { data } = await supabase.auth.getUser()

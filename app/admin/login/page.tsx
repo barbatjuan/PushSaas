@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Nota: Esta pantalla existe por compatibilidad temporal. Los endpoints ya soportan login con Clerk + rol admin.
+              Nota: Esta pantalla existe por compatibilidad temporal. Los endpoints ya soportan login con Supabase + rol admin.
             </p>
           </form>
         </CardContent>

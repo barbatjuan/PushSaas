@@ -33,7 +33,6 @@ import {
 
 interface UserData {
   id: string
-  clerk_id: string
   email: string
   name: string
   role: 'user' | 'admin'

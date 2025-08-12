@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const { data: createData, error: createError } = await supabaseAdmin
       .from('users')
       .insert({
-        clerk_id: testUserId,
+        supabase_user_id: testUserId,
         email: 'test@example.com',
         name: 'Test User',
         plan: 'free'
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     await supabaseAdmin
       .from('users')
       .delete()
-      .eq('clerk_id', testUserId)
+      .eq('supabase_user_id', testUserId)
 
     return NextResponse.json({
       success: true,

@@ -39,7 +39,7 @@ export default function SimpleAdminDashboard() {
     try {
       setRefreshing(true)
       setError('')
-      // Fetch basic counts. Server validates admin role via Clerk + DB.
+      // Fetch basic counts. Server valida rol admin vía Supabase + DB.
       const response = await fetch(`/api/admin/simple-stats`)
       
       if (response.ok) {

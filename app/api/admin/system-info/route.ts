@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
       
       // Check if critical environment variables are set
       adminPasswordSet: !!process.env.ADMIN_PASSWORD,
-      clerkConfigured: !!(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY),
       supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
       vapidConfigured: !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY),
       
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest) {
     console.log('✅ System info compiled:', {
       environment: systemInfo.environment,
       adminPassword: systemInfo.adminPasswordSet ? '✅' : '❌',
-      clerk: systemInfo.clerkConfigured ? '✅' : '❌',
       supabase: systemInfo.supabaseConfigured ? '✅' : '❌',
       vapid: systemInfo.vapidConfigured ? '✅' : '❌'
     })

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/lib/database.types'
 
-// Middleware pas-through sin Clerk.
+// Middleware pas-through con Supabase Auth.
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const disableSignups = process.env.DISABLE_SIGNUPS === 'true'
@@ -17,7 +17,7 @@ export default async function middleware(req: NextRequest) {
     // noop: si falla, no bloquea la request
   }
 
-  // Redirigir antiguo path de Clerk a nuestras nuevas rutas
+  // Redirigir paths legacy a las rutas de auth actuales
   if (pathname.startsWith('/sign-in')) {
     const url = req.nextUrl.clone()
     url.pathname = '/auth/sign-in'

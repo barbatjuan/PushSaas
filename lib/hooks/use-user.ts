@@ -35,7 +35,7 @@ export function useCurrentUser() {
         if (existingUser) {
           setDbUser(existingUser)
         } else if (error?.code === 'PGRST116') {
-          // No row by clerk_id. Try to link existing row by email to avoid duplicates and preserve role/plan.
+          // No existe fila para este usuario. Intentar enlazar por email para evitar duplicados y preservar role/plan.
           const primaryEmail = authUser.email ?? ''
 
           const { data: byEmail, error: emailErr } = await supabaseBrowser
@@ -45,7 +45,7 @@ export function useCurrentUser() {
             .single()
 
           if (byEmail && !emailErr) {
-            // Update existing row to attach current clerk_id (preserve role/plan)
+            // Actualizar fila existente para vincular el usuario actual (preservar role/plan)
             const { data: updated, error: updateErr } = await supabaseBrowser
               .from('users')
               .update({
@@ -62,7 +62,7 @@ export function useCurrentUser() {
               setDbUser(updated)
             }
           } else {
-            // Create new user; set role from Clerk metadata if present
+            // Crear nuevo usuario; determinar rol desde metadatos si está presente
             const roleFromMetadata = (authUser.user_metadata as any)?.role === 'admin' ? 'admin' : 'user'
             const { data: newUser, error: createError } = await supabaseBrowser
               .from('users')

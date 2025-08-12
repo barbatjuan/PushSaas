@@ -1,3 +1,5 @@
+> DEPRECADO: Migrado a Supabase Auth. Mantener solo como referencia histórica.
+
 # Clerk Setup Instructions
 
 ## Problem

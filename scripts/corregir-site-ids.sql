@@ -2,7 +2,7 @@
 -- Basado en la información correcta de users_rows
 
 -- Verificamos los usuarios actuales
-SELECT id, email, clerk_id
+SELECT id, email, supabase_user_id
 FROM users
 WHERE id IN ('8f81263a-b753-4c62-a504-14dee864c957', '5703a897-7274-4574-882d-13e04344fe00');
 

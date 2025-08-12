@@ -1,4 +1,5 @@
--- Disable RLS for all tables to work with Clerk authentication
+-- LEGACY: Script histórico. Con Supabase Auth no es necesario desactivar RLS globalmente.
+-- Mantener solo como referencia si se requiere depuración puntual de políticas.
 ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE sites DISABLE ROW LEVEL SECURITY;
 ALTER TABLE subscribers DISABLE ROW LEVEL SECURITY;

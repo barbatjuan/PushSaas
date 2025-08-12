@@ -15,17 +15,17 @@ export async function POST(_req: NextRequest) {
 
     // 1) Try to find by supabase_user_id
     const admin = getSupabaseAdmin()
-    const { data: byClerk, error: byClerkErr } = await admin
+    const { data: byUser, error: byUserErr } = await admin
       .from('users')
       .select('*')
       .eq('supabase_user_id', user.id)
       .maybeSingle()
 
-    if (byClerk && !byClerkErr) {
-      return NextResponse.json({ linked: true, user: byClerk })
+    if (byUser && !byUserErr) {
+      return NextResponse.json({ linked: true, user: byUser })
     }
 
-    // 2) Try to find by email and attach clerk_id (preserve role/plan)
+    // 2) Try to find by email y vincular al user actual (preservar role/plan)
     const { data: byEmail, error: byEmailErr } = await admin
       .from('users')
       .select('*')

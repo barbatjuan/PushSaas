@@ -134,7 +134,7 @@ export default async function AdminLayout({
                 </div>
                 
                 <Link 
-                  href="/auth/sign-out" 
+                  href="/sign-out" 
                   className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors ml-2"
                 >
                   Cerrar sesión

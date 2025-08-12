@@ -18,7 +18,6 @@ interface SystemInfo {
   database: string
   vapidConfigured: boolean
   adminPasswordSet: boolean
-  clerkConfigured: boolean
   supabaseConfigured: boolean
 }
 
@@ -157,17 +156,17 @@ export default function AdminSettings() {
                 </Badge>
               </div>
 
-              {/* Clerk Auth */}
+              {/* Auth Provider */}
               <div className="flex justify-between items-center py-3 border-b">
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-slate-100">Clerk Authentication</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Supabase Authentication</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Sistema de autenticación de usuarios</p>
                   </div>
                 </div>
-                <Badge variant={systemInfo?.clerkConfigured ? 'default' : 'destructive'}>
-                  {systemInfo?.clerkConfigured ? 'Configurado' : 'No configurado'}
+                <Badge variant={systemInfo?.supabaseConfigured ? 'default' : 'destructive'}>
+                  {systemInfo?.supabaseConfigured ? 'Configurado' : 'No configurado'}
                 </Badge>
               </div>
 
@@ -226,7 +225,7 @@ export default function AdminSettings() {
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-slate-100">Autenticación</p>
-                <p className="text-gray-600 dark:text-gray-400">Clerk + Admin Password</p>
+                <p className="text-gray-600 dark:text-gray-400">Supabase Auth + Admin Password</p>
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-slate-100">Push Notifications</p>

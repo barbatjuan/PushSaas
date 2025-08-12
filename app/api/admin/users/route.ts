@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     // Get all users (without relying on FK-based nested selects)
     const { data: users, error: usersError } = await supabaseAdmin
       .from('users')
-      .select('id, clerk_id, email, name, role, plan, created_at, updated_at')
+      .select('id, email, name, role, plan, created_at, updated_at')
       .order('created_at', { ascending: false })
 
     if (usersError) throw usersError

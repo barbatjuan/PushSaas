@@ -7,40 +7,27 @@ export default async function handler(req, res) {
   // Endpoint público para desarrollo y producción
   // Acepta:
   // - userId: UUID interno de la tabla users.id
-  // - clerkId: identificador de Clerk (users.clerk_id)
-  // También tolera que "userId" traiga el clerkId por compatibilidad
   // Nota: en POST también aceptaremos en el body
-  const { userId: qUserId, clerkId: qClerkId } = req.query;
-  const { userId: bUserId, clerkId: bClerkId } = (req.method === 'POST' ? (req.body || {}) : {});
+  const { userId: qUserId } = req.query;
+  const { userId: bUserId } = (req.method === 'POST' ? (req.body || {}) : {});
   const userId = qUserId || bUserId;
-  const clerkId = qClerkId || bClerkId;
 
-  if (!userId && !clerkId) {
-    return res.status(400).json({ error: 'userId (UUID) o clerkId son requeridos' });
+  if (!userId) {
+    return res.status(400).json({ error: 'userId (UUID) es requerido' });
   }
 
-  // Resolver el UUID interno del usuario a partir de userId o clerkId
+  // Resolver el UUID interno del usuario a partir de userId
   async function resolveUserUUID() {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const raw = userId || clerkId;
+    const raw = userId;
 
     // Si parece un UUID, úsalo directamente
     if (raw && uuidRegex.test(raw)) {
       return raw;
     }
 
-    // Si viene clerkId explícito o el "userId" no es UUID, intentar buscar por clerk_id
-    const clerkLookup = clerkId || raw;
-    if (!clerkLookup) return null;
-
-    const { data: userRow, error: userErr } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('clerk_id', clerkLookup)
-      .single();
-
-    if (userErr || !userRow) return null;
-    return userRow.id;
+    // Si no es UUID válido, no resolver
+    return null;
   }
 
   const userUUID = await resolveUserUUID();
@@ -62,7 +49,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Error fetching sites' });
     }
   } else if (req.method === 'POST') {
-    // Tolerar claves alternativas desde el frontend
+    // Validar payload
     const siteName = req.body.siteName || req.body.name;
     const siteUrl = req.body.siteUrl || req.body.url;
     if (!siteName || !siteUrl) {

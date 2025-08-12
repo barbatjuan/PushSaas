@@ -2,13 +2,13 @@
 
 Una plataforma SaaS white-label para que pequeños negocios puedan reconectar con visitantes de su sitio web mediante notificaciones push.
 
-*Force redeploy - fixing Clerk domain issue*
+*Proyecto migrado a Supabase Auth (se eliminó Clerk)*
 
 ## 🛠️ Stack Tecnológico
 
 - **Frontend**: Next.js 14 + React + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui
-- **Autenticación**: Clerk
+- **Autenticación**: Supabase Auth
 - **Base de datos**: Supabase (PostgreSQL)
 - **Push Notifications**: Web Push nativo (VAPID)
 - **Deployment**: Vercel
@@ -25,14 +25,8 @@ npm install --legacy-peer-deps
 
 Copia `.env.example` a `.env.local` y completa las siguientes variables:
 
-#### Clerk (Autenticación)
-1. Ve a [clerk.com](https://clerk.com) y crea una cuenta
-2. Crea una nueva aplicación
-3. Copia las claves:
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-```
+#### Supabase Auth (Autenticación)
+Crea un proyecto en Supabase y usa las claves a continuación. La autenticación se gestiona con `@supabase/auth-helpers-nextjs` (App Router y Middleware).
 
 #### Supabase (Base de datos)
 1. Ve a [supabase.com](https://supabase.com) y crea un proyecto
@@ -76,8 +70,8 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 │   │   ├── subscribers/   # Gestión de suscriptores
 │   │   └── notifications/ # Envío de notificaciones
 │   ├── dashboard/         # Panel de usuario
-│   ├── sign-in/          # Página de login
-│   └── sign-up/          # Página de registro
+│   ├── auth/sign-in/      # Página de login
+│   └── auth/sign-up/      # Página de registro
 ├── components/ui/         # Componentes de UI (shadcn/ui)
 ├── lib/                   # Utilidades y configuración
 │   ├── supabase.ts       # Cliente de Supabase
@@ -92,9 +86,9 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 ## 🔧 Funcionalidades Implementadas
 
 ### ✅ Autenticación
-- Registro e inicio de sesión con Clerk
+- Registro e inicio de sesión con Supabase Auth (email+password y Magic Link)
 - Roles de usuario (user/admin)
-- Middleware de protección de rutas
+- Middleware de protección de rutas (refresco de sesión Supabase)
 
 ### ✅ Gestión de Sitios
 - Registro de sitios web
@@ -126,8 +120,7 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 ### Para el administrador de la plataforma:
 
 1. **Configurar las cuentas de servicio**:
-   - Clerk para autenticación
-   - Supabase para base de datos
+   - Supabase (auth + base de datos)
    - Web Push nativo para notificaciones
 
 2. **Desplegar la aplicación** en Vercel o similar
@@ -166,11 +159,6 @@ El proyecto estará disponible en [http://localhost:3000](http://localhost:3000)
 - [ ] A/B testing de notificaciones
 
 ## 🐛 Troubleshooting
-
-### Error de Clerk
-Si ves errores de Clerk, verifica que:
-- Las claves en `.env.local` sean correctas
-- La URL de callback esté configurada en Clerk
 
 ### Error de Supabase
 Si hay problemas con la base de datos:

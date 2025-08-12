@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 1) Prefer DB role check using Clerk user
+    // 1) Prefer DB role check using Supabase user
     let isAdmin = false
     try {
       const { data: dbUser, error } = await supabaseAdmin
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       console.error('Error checking admin role from DB:', e)
     }
 
-    // Require admin via Clerk/DB only (no legacy password fallback)
+    // Require admin via Supabase/DB only (no legacy password fallback)
     if (!isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
