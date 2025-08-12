@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -14,12 +15,13 @@ interface AdminUserMenuProps {
 export default function AdminUserMenu({ user }: AdminUserMenuProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const router = useRouter()
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      // Redirigir a la página de logout de Clerk
-      window.location.href = '/sign-out'
+      // Usar router de Next.js para mejor compatibilidad con SSR
+      router.push('/sign-out')
     } catch (error) {
       console.error('Error al cerrar sesión:', error)
       setIsLoggingOut(false)
