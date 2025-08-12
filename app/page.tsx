@@ -32,7 +32,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard')
+      router.push('/post-login')
     }
   }, [user, router])
 

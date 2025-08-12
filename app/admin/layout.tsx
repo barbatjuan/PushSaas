@@ -1,4 +1,4 @@
-import { currentUser } from '@/lib/server-auth';
+import { currentUserSC, getSupabaseAdmin } from '@/lib/server-auth';
 import { redirect } from 'next/navigation';
 
 // Import supabaseAdmin lazily inside the component to avoid crashing
@@ -17,7 +17,7 @@ export default async function AdminLayout({
 }) {
   let user: any = null
   try {
-    user = await currentUser()
+    user = await currentUserSC()
   } catch (e) {
     console.error('Error calling currentUser in admin layout:', e)
     redirect('/auth/sign-in')
@@ -27,14 +27,11 @@ export default async function AdminLayout({
     redirect('/auth/sign-in')
   }
 
-  // Debugging: Log the user's public metadata to see what the server receives
-  console.log('Checking admin status for user:', user.id);
-  console.log('User public metadata:', JSON.stringify(user.publicMetadata, null, 2));
   // Verificar rol desde la base de datos (fuente de verdad)
   let isAdmin = false
   try {
-    const { supabaseAdmin } = await import('@/lib/supabase')
-    const { data: dbUser, error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { data: dbUser, error } = await admin
       .from('users')
       .select('role')
       .eq('supabase_user_id', user.id)
@@ -44,10 +41,6 @@ export default async function AdminLayout({
     }
   } catch (e) {
     console.error('Error comprobando rol admin en DB:', e)
-  }
-  // Fallback: permitir metadata de Clerk si existe
-  if (!isAdmin && (user.publicMetadata as any)?.role === 'admin') {
-    isAdmin = true
   }
 
   if (!isAdmin) {
@@ -118,15 +111,15 @@ export default async function AdminLayout({
               <ThemeToggle />
               <div className="text-right">
                 <span className="text-sm text-gray-600 dark:text-gray-300 block">
-                  Admin: {user.emailAddresses[0]?.emailAddress || 'N/A'}
+                  Admin: {user.email || 'N/A'}
                 </span>
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  ID: {user.id.slice(-8)}
+                  ID: {String(user.id).slice(-8)}
                 </span>
               </div>
               <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
-                  {(user.firstName?.[0] || user.emailAddresses[0]?.emailAddress[0] || 'A').toUpperCase()}
+                  {(user.email?.[0] || 'A').toUpperCase()}
                 </span>
               </div>
             </div>
