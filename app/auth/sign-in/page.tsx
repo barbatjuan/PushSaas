@@ -25,13 +25,13 @@ export default function SignInPage() {
       setError((res as any).error.message || "Error al iniciar sesión");
       return;
     }
-    router.push("/dashboard");
+    router.push("/post-login");
   }
 
   async function onMagicLink() {
     setError(null);
     setLoading(true);
-    const url = typeof window !== "undefined" ? `${window.location.origin}/dashboard` : undefined;
+    const url = typeof window !== "undefined" ? `${window.location.origin}/post-login` : undefined;
     const res = await signInWithMagicLink(email, url);
     setLoading(false);
     if ((res as any)?.error) {
