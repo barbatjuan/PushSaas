@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { currentUser } from '@/lib/server-auth'
-import { supabaseAdmin } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/server-auth'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -14,7 +14,8 @@ export async function POST(_req: NextRequest) {
     if (!email) return NextResponse.json({ error: 'No email' }, { status: 400 })
 
     // 1) Try to find by supabase_user_id
-    const { data: byClerk, error: byClerkErr } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { data: byClerk, error: byClerkErr } = await admin
       .from('users')
       .select('*')
       .eq('supabase_user_id', user.id)
@@ -25,7 +26,7 @@ export async function POST(_req: NextRequest) {
     }
 
     // 2) Try to find by email and attach clerk_id (preserve role/plan)
-    const { data: byEmail, error: byEmailErr } = await supabaseAdmin
+    const { data: byEmail, error: byEmailErr } = await admin
       .from('users')
       .select('*')
       .eq('email', email)
@@ -36,7 +37,7 @@ export async function POST(_req: NextRequest) {
     }
 
     if (byEmail) {
-      const { data: updated, error: updateErr } = await supabaseAdmin
+      const { data: updated, error: updateErr } = await admin
         .from('users')
         .update({ supabase_user_id: user.id, name: byEmail.name || (user.user_metadata as any)?.name || email })
         .eq('id', byEmail.id)
@@ -49,7 +50,7 @@ export async function POST(_req: NextRequest) {
 
     // 3) Create new if none exists; set role from user metadata if present
     const roleFromMetadata = (user.user_metadata as any)?.role === 'admin' ? 'admin' : 'user'
-    const { data: created, error: createErr } = await supabaseAdmin
+    const { data: created, error: createErr } = await admin
       .from('users')
       .insert({
         supabase_user_id: user.id,

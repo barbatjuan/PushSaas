@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabaseBrowser } from '@/lib/auth-context'
 import { Database } from '@/lib/database.types'
 import { useAuth } from '@/lib/auth-context'
 
@@ -26,7 +26,7 @@ export function useCurrentUser() {
         }
 
         // First, try to get the user from our database
-        const { data: existingUser, error } = await supabase
+        const { data: existingUser, error } = await supabaseBrowser
           .from('users')
           .select('*')
           .eq('supabase_user_id', authUser.id)
@@ -38,7 +38,7 @@ export function useCurrentUser() {
           // No row by clerk_id. Try to link existing row by email to avoid duplicates and preserve role/plan.
           const primaryEmail = authUser.email ?? ''
 
-          const { data: byEmail, error: emailErr } = await supabase
+          const { data: byEmail, error: emailErr } = await supabaseBrowser
             .from('users')
             .select('*')
             .eq('email', primaryEmail)
@@ -46,7 +46,7 @@ export function useCurrentUser() {
 
           if (byEmail && !emailErr) {
             // Update existing row to attach current clerk_id (preserve role/plan)
-            const { data: updated, error: updateErr } = await supabase
+            const { data: updated, error: updateErr } = await supabaseBrowser
               .from('users')
               .update({
                 supabase_user_id: authUser.id,
@@ -64,7 +64,7 @@ export function useCurrentUser() {
           } else {
             // Create new user; set role from Clerk metadata if present
             const roleFromMetadata = (authUser.user_metadata as any)?.role === 'admin' ? 'admin' : 'user'
-            const { data: newUser, error: createError } = await supabase
+            const { data: newUser, error: createError } = await supabaseBrowser
               .from('users')
               .insert({
                 supabase_user_id: authUser.id,

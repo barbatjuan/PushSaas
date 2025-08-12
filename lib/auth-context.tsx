@@ -1,20 +1,12 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Session, User } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 
-// Create a dedicated browser client for auth state
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  // Fail early in dev so it's obvious
-  // eslint-disable-next-line no-console
-  console.warn("Supabase env vars missing: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
-}
-
-export const supabaseBrowser = createClient(supabaseUrl!, supabaseAnonKey!);
+// Cliente de navegador basado en auth-helpers-nextjs (sincroniza sesión vía cookies)
+export const supabaseBrowser = createClientComponentClient<Database>();
 
 export type AuthContextValue = {
   user: User | null;
