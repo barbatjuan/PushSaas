@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link'
 import { BarChart3, Users, Globe, Settings, DollarSign } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
+import AdminUserMenu from '@/components/AdminUserMenu'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -109,19 +110,7 @@ export default async function AdminLayout({
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <div className="text-right">
-                <span className="text-sm text-gray-600 dark:text-gray-300 block">
-                  Admin: {user.email || 'N/A'}
-                </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  ID: {String(user.id).slice(-8)}
-                </span>
-              </div>
-              <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {(user.email?.[0] || 'A').toUpperCase()}
-                </span>
-              </div>
+              <AdminUserMenu user={user} />
             </div>
           </div>
         </div>
