@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link'
 import { BarChart3, Users, Globe, Settings, DollarSign } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
-import AdminUserMenu from '@/components/AdminUserMenu'
+
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -110,7 +110,36 @@ export default async function AdminLayout({
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <AdminUserMenu user={user} />
+              
+              {/* Simple User Info Display */}
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {user.email || 'Admin'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      ID:
+                    </span>
+                    <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono border">
+                      {String(user.id).slice(-8)}
+                    </code>
+                  </div>
+                </div>
+                
+                <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-white text-sm font-medium">
+                    {(user.email?.[0] || 'A').toUpperCase()}
+                  </span>
+                </div>
+                
+                <Link 
+                  href="/auth/sign-out" 
+                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors ml-2"
+                >
+                  Cerrar sesión
+                </Link>
+              </div>
             </div>
           </div>
         </div>

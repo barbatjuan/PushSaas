@@ -2,29 +2,32 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function SignOutPage() {
   const router = useRouter()
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    // Limpiar cualquier estado local/cookies si es necesario
-    // y redirigir a la página de inicio de sesión
     const handleSignOut = async () => {
       try {
-        // Limpiar localStorage si hay datos de sesión
+        // Cerrar sesión con Supabase
+        await supabase.auth.signOut()
+        
+        // Limpiar localStorage si hay datos adicionales
         localStorage.clear()
         
         // Redirigir a la página de sign-in
-        router.push('/sign-in')
+        router.push('/auth/sign-in')
       } catch (error) {
         console.error('Error durante el logout:', error)
         // Aún así redirigir en caso de error
-        router.push('/sign-in')
+        router.push('/auth/sign-in')
       }
     }
 
     handleSignOut()
-  }, [router])
+  }, [router, supabase])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
