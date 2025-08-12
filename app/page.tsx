@@ -146,7 +146,7 @@ export default function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link href="/auth/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">Comenzar Gratis</Link>
+                <Link href="/auth/sign-up" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center text-center">Comenzar Gratis</Link>
                 <Link href="/auth/sign-in" className="border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-8 py-4 rounded-2xl text-lg font-semibold hover:border-blue-600 hover:text-blue-600 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
                   <Play className="w-5 h-5" />
                   <span>Iniciar Sesión</span>
@@ -180,12 +180,127 @@ export default function HomePage() {
                     <div className="w-3 h-3 bg-green-500 rounded-full" />
                     <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1 text-sm text-gray-600 dark:text-gray-300 text-center">tusitio.com</div>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg h-64 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-xl mx-auto mb-4 flex items-center justify-center">
-                        <Smartphone className="w-8 h-8 text-gray-400 dark:text-gray-300" />
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg h-64 flex items-center justify-center relative overflow-hidden">
+                    {/* Fondo animado con partículas */}
+                    <div className="absolute inset-0">
+                      <div className="absolute top-8 left-8 w-1 h-1 bg-blue-400/30 rounded-full animate-pulse"></div>
+                      <div className="absolute top-16 right-12 w-2 h-2 bg-purple-400/20 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
+                      <div className="absolute bottom-12 left-6 w-1.5 h-1.5 bg-indigo-400/25 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                      <div className="absolute bottom-20 right-8 w-1 h-1 bg-pink-400/30 rounded-full animate-bounce" style={{animationDelay: '1.5s'}}></div>
+                      <div className="absolute top-1/2 left-4 w-0.5 h-0.5 bg-cyan-400/40 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+                    </div>
+
+                    <div className="text-center z-10">
+                      {/* Ilustración 3D isométrica animada */}
+                      <div className="relative mx-auto mb-6 transform hover:scale-105 transition-transform duration-500">
+                        
+                        {/* Escritorio/Base 3D */}
+                        <div className="relative">
+                          <div className="w-40 h-6 bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 rounded-full transform perspective-1000 rotateX-60 shadow-2xl"></div>
+                        </div>
+
+                        {/* Monitor principal 3D */}
+                        <div className="relative -mt-3 transform perspective-1000">
+                          {/* Base del monitor */}
+                          <div className="w-8 h-8 bg-gradient-to-br from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 rounded-lg mx-auto mb-1 shadow-lg"></div>
+                          
+                          {/* Pantalla principal */}
+                          <div className="w-36 h-24 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-xl shadow-2xl relative overflow-hidden mx-auto transform hover:rotate-y-5 transition-transform duration-700 border-2 border-white/20">
+                            {/* Marco de la pantalla */}
+                            <div className="absolute inset-1 bg-black/10 rounded-lg"></div>
+                            
+                            {/* Barra superior del navegador */}
+                            <div className="h-4 bg-white/15 backdrop-blur-sm flex items-center px-3 space-x-1.5 border-b border-white/10">
+                              <div className="w-2 h-2 bg-red-400 rounded-full shadow-sm animate-pulse"></div>
+                              <div className="w-2 h-2 bg-yellow-400 rounded-full shadow-sm animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                              <div className="w-2 h-2 bg-green-400 rounded-full shadow-sm animate-pulse" style={{animationDelay: '0.6s'}}></div>
+                              <div className="flex-1 h-1.5 bg-white/20 rounded-full ml-2"></div>
+                            </div>
+                            
+                            {/* Contenido de la página con animaciones */}
+                            <div className="p-3 space-y-1.5">
+                              <div className="h-1.5 bg-white/50 rounded w-4/5 animate-pulse"></div>
+                              <div className="h-1 bg-white/40 rounded w-3/5 animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                              <div className="h-1 bg-white/35 rounded w-4/6 animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                              
+                              <div className="flex space-x-1.5 mt-3">
+                                <div className="w-4 h-4 bg-white/45 rounded shadow-sm animate-bounce" style={{animationDelay: '0.5s'}}></div>
+                                <div className="w-4 h-4 bg-white/35 rounded shadow-sm animate-bounce" style={{animationDelay: '0.8s'}}></div>
+                                <div className="w-4 h-4 bg-white/40 rounded shadow-sm animate-bounce" style={{animationDelay: '1.1s'}}></div>
+                              </div>
+                              
+                              {/* Simulación de gráfico */}
+                              <div className="flex items-end space-x-0.5 mt-2 h-6">
+                                <div className="w-1 bg-white/60 rounded-t animate-pulse" style={{height: '60%', animationDelay: '0.1s'}}></div>
+                                <div className="w-1 bg-white/50 rounded-t animate-pulse" style={{height: '80%', animationDelay: '0.3s'}}></div>
+                                <div className="w-1 bg-white/55 rounded-t animate-pulse" style={{height: '40%', animationDelay: '0.5s'}}></div>
+                                <div className="w-1 bg-white/65 rounded-t animate-pulse" style={{height: '90%', animationDelay: '0.7s'}}></div>
+                                <div className="w-1 bg-white/45 rounded-t animate-pulse" style={{height: '70%', animationDelay: '0.9s'}}></div>
+                              </div>
+                            </div>
+                            
+                            {/* Efectos de brillo dinámicos */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-white/25 animate-pulse"></div>
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                          </div>
+                        </div>
+
+                        {/* Dispositivos flotantes con animaciones 3D */}
+                        <div className="absolute -bottom-4 -right-6 transform hover:scale-110 transition-transform duration-500">
+                          <div className="w-10 h-16 bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-700 rounded-lg shadow-xl transform rotate-12 hover:rotate-6 transition-transform duration-700 border border-white/20">
+                            <div className="h-2 bg-white/20 rounded-t-lg"></div>
+                            <div className="p-1.5 space-y-0.5">
+                              <div className="h-0.5 bg-white/40 rounded w-full animate-pulse"></div>
+                              <div className="h-0.5 bg-white/30 rounded w-3/4 animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                              <div className="h-0.5 bg-white/35 rounded w-4/5 animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                              <div className="flex space-x-0.5 mt-1">
+                                <div className="w-1.5 h-1.5 bg-white/50 rounded animate-bounce" style={{animationDelay: '0.6s'}}></div>
+                                <div className="w-1.5 h-1.5 bg-white/40 rounded animate-bounce" style={{animationDelay: '0.8s'}}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute -top-2 -left-8 transform hover:scale-110 transition-transform duration-500">
+                          <div className="w-8 h-6 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-md shadow-lg transform -rotate-12 hover:-rotate-6 transition-transform duration-700 border border-white/20">
+                            <div className="p-1 space-y-0.5">
+                              <div className="h-0.5 bg-white/50 rounded w-full animate-pulse"></div>
+                              <div className="h-0.5 bg-white/40 rounded w-2/3 animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                              <div className="flex space-x-0.5">
+                                <div className="w-1 h-1 bg-white/60 rounded animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                                <div className="w-1 h-1 bg-white/50 rounded animate-pulse" style={{animationDelay: '0.7s'}}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Notificaciones flotantes animadas */}
+                        <div className="absolute -top-6 right-2 animate-bounce" style={{animationDelay: '1s'}}>
+                          <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full shadow-lg flex items-center justify-center border-2 border-white/30">
+                            <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                          </div>
+                        </div>
+
+                        <div className="absolute top-8 -left-4 animate-bounce" style={{animationDelay: '1.5s'}}>
+                          <div className="w-4 h-4 bg-gradient-to-br from-orange-400 to-red-500 rounded-full shadow-lg flex items-center justify-center border border-white/30">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-gray-500 dark:text-gray-400">Tu sitio web</p>
+                      
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-pulse">
+                          Tu Sitio Web
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                          Conecta • Convierte • Crece
+                        </p>
+                        <div className="flex justify-center space-x-1">
+                          <div className="w-2 h-0.5 bg-blue-400 rounded-full animate-pulse"></div>
+                          <div className="w-2 h-0.5 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                          <div className="w-2 h-0.5 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
