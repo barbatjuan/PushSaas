@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) exit; // Evita acceso directo
 class NotiFlyPlugin {
     
     private $option_name = 'notifly_site_id';
-    private $cdn_base = 'https://adioswifi.es/api';
+    private $cdn_base = 'https://www.adioswifi.es';
     
     public function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -102,7 +102,7 @@ class NotiFlyPlugin {
                                         class="regular-text"
                                     />
                                     <p class="description">
-                                        Obtén tu Site ID desde tu <a href="https://adioswifi.es/dashboard" target="_blank">dashboard de NotiFly</a>
+                                        Obtén tu Site ID desde tu <a href="https://www.adioswifi.es/dashboard" target="_blank">dashboard de NotiFly</a>
                                     </p>
                                 </td>
                             </tr>
@@ -131,9 +131,9 @@ class NotiFlyPlugin {
                             try {
                                 // URLs a verificar
                                 const urls = {
-                                    sdk: `${cdnBase}/sdk.js?site=${siteId}`,
-                                    sw: `${cdnBase}/sw.js?site=${siteId}`,
-                                    manifest: `${cdnBase}/manifest.json?site=${siteId}`
+                                    sdk: `${cdnBase}/sdk.js`,
+                                    sw: `${cdnBase}/sw.js`,
+                                    manifest: `${cdnBase}/manifest.json`
                                 };
                                 
                                 // Verificar cada URL
@@ -228,10 +228,10 @@ class NotiFlyPlugin {
                     </div>
                     
                     <div class="notifly-actions">
-                        <a href="https://adioswifi.es/dashboard" target="_blank" class="button button-primary">
+                        <a href="https://www.adioswifi.es/dashboard" target="_blank" class="button button-primary">
                             📊 Ver Dashboard
                         </a>
-                        <a href="https://adioswifi.es/dashboard/notifications/new?site=<?php echo $site_id; ?>" target="_blank" class="button">
+                        <a href="https://www.adioswifi.es/dashboard/notifications/new?site=<?php echo $site_id; ?>" target="_blank" class="button">
                             📤 Enviar Notificación
                         </a>
                     </div>
@@ -245,7 +245,7 @@ class NotiFlyPlugin {
                             <div class="step-number">1</div>
                             <div class="step-content">
                                 <h3>Crea tu cuenta en NotiFly</h3>
-                                <p>Regístrate gratis en <a href="https://adioswifi.es/sign-up" target="_blank">adioswifi.es</a></p>
+                                <p>Regístrate gratis en <a href="https://www.adioswifi.es/sign-up" target="_blank">www.adioswifi.es</a></p>
                             </div>
                         </div>
                         <div class="step">
@@ -490,16 +490,19 @@ class NotiFlyPlugin {
         echo "\n<!-- NotiFly Push Notifications -->\n";
         
         // SDK Principal
-        echo "<script src='{$this->cdn_base}/sdk.js?site={$site_id}' async></script>\n";
+        echo "<script src='{$this->cdn_base}/sdk.js' async></script>\n";
         
         // Web App Manifest
-        echo "<link rel='manifest' href='{$this->cdn_base}/manifest.json?site={$site_id}'>\n";
+        echo "<link rel='manifest' href='{$this->cdn_base}/manifest.json'>\n";
         
         // Registro del Service Worker
         echo "<script>
+// Configurar Site ID globalmente
+window.NOTIFLY_SITE_ID = '{$site_id}';
+
 if ('serviceWorker' in navigator && 'PushManager' in window) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('{$this->cdn_base}/sw.js?site={$site_id}')
+        navigator.serviceWorker.register('{$this->cdn_base}/sw.js')
             .then(function(registration) {
                 console.log('✅ NotiFly: Service Worker registrado exitosamente');
             })
