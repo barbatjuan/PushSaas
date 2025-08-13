@@ -3,7 +3,7 @@
 Plugin Name: NotiFly Push Notifications
 Plugin URI: https://notifly.com
 Description: Integra NotiFly en WordPress con mínimo esfuerzo. Solo introduce tu Site ID y listo.
-Version: 2.0.0
+Version: 2.1.0
 Author: NotiFly Team
 Author URI: https://notifly.com
 License: GPL v2 or later
@@ -553,45 +553,13 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
         header('Content-Type: application/javascript');
         header('Service-Worker-Allowed: /');
         
-        // Service Worker básico para NotiFly
+        // Service Worker local mínimo: delega toda la lógica al SW centralizado
         echo "
-// NotiFly Service Worker - Generado dinámicamente
+// NotiFly Service Worker (local mínimo) - Generado dinámicamente
 const SITE_ID = '{$site_id}';
-const API_BASE = 'https://www.adioswifi.es';
-
-self.addEventListener('push', function(event) {
-    if (!event.data) return;
-    
-    try {
-        const data = event.data.json();
-        const options = {
-            body: data.body || 'Nueva notificación',
-            icon: data.icon || '/favicon.ico',
-            badge: data.badge || '/favicon.ico',
-            tag: data.tag || 'notifly-notification',
-            data: data.data || {},
-            actions: data.actions || []
-        };
-        
-        event.waitUntil(
-            self.registration.showNotification(data.title || 'Nueva notificación', options)
-        );
-    } catch (error) {
-        console.error('Error processing push notification:', error);
-    }
-});
-
-self.addEventListener('notificationclick', function(event) {
-    event.notification.close();
-    
-    const url = event.notification.data?.url || '/';
-    
-    event.waitUntil(
-        clients.openWindow(url)
-    );
-});
-
-console.log('NotiFly Service Worker loaded for site:', SITE_ID);
+// Importa el SW centralizado desde CDN con el Site ID del cliente
+importScripts('{$this->cdn_base}/sw.js?site=' + SITE_ID);
+console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);
 ";
     }
     
