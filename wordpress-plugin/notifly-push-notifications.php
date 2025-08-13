@@ -23,6 +23,8 @@ class NotiFlyPlugin {
         add_action('wp_head', array($this, 'insert_notifly_scripts'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         add_action('init', array($this, 'handle_notifly_requests'));
+        // Regenerar archivos cuando cambie el Site ID
+        add_action('update_option_' . $this->option_name, array($this, 'on_site_id_updated'), 10, 3);
     }
     
     /**
@@ -500,12 +502,14 @@ window.NOTIFLY_API_BASE = 'https://www.adioswifi.es';
         // SDK Principal desde CDN
         echo "<script src='{$this->cdn_base}/sdk.js' async></script>\n";
         
-        // Web App Manifest local (mismo dominio)
-        $manifest_url = home_url('/?notifly_manifest=1');
+        // Web App Manifest preferentemente desde la raíz; fallback al endpoint dinámico
+        $manifest_path = ABSPATH . 'manifest.json';
+        $manifest_url = file_exists($manifest_path) ? home_url('/manifest.json') : home_url('/?notifly_manifest=1');
         echo "<link rel='manifest' href='{$manifest_url}'>\n";
         
-        // Service Worker local (mismo dominio)
-        $sw_url = home_url('/?notifly_sw=1');
+        // Service Worker preferentemente desde la raíz; fallback al endpoint dinámico
+        $sw_path = ABSPATH . 'sw.js';
+        $sw_url = file_exists($sw_path) ? home_url('/sw.js') : home_url('/?notifly_sw=1');
         echo "<script>
 if ('serviceWorker' in navigator && 'PushManager' in window) {
     window.addEventListener('load', function() {
@@ -561,6 +565,82 @@ const SITE_ID = '{$site_id}';
 importScripts('{$this->cdn_base}/sw.js?site=' + SITE_ID);
 console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);
 ";
+    }
+
+    /**
+     * Genera sw.js en la raíz de WordPress con SW local mínimo
+     */
+    public function generate_service_worker($site_id) {
+        if (empty($site_id)) return false;
+        $content = "// NotiFly Service Worker (local mínimo) - Generado por plugin\n" .
+                   "const SITE_ID = '" . esc_js($site_id) . "';\n" .
+                   "importScripts('" . esc_url($this->cdn_base) . "/sw.js?site=' + SITE_ID);\n" .
+                   "console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);\n";
+
+        return $this->put_file(ABSPATH . 'sw.js', $content);
+    }
+
+    /**
+     * Genera manifest.json en la raíz de WordPress
+     */
+    public function generate_manifest() {
+        $site_name = get_bloginfo('name');
+        $site_desc = get_bloginfo('description');
+        $site_url  = home_url();
+        $manifest  = array(
+            'name' => $site_name,
+            'short_name' => $site_name,
+            'description' => $site_desc,
+            'start_url' => $site_url,
+            'scope' => $site_url,
+            'display' => 'standalone',
+            'background_color' => '#ffffff',
+            'theme_color' => '#000000',
+            'icons' => array(
+                array(
+                    'src' => $site_url . '/favicon.ico',
+                    'sizes' => '32x32',
+                    'type' => 'image/x-icon'
+                )
+            )
+        );
+        $content = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return $this->put_file(ABSPATH . 'manifest.json', $content);
+    }
+
+    /**
+     * Callback al actualizar el Site ID: regenerar archivos en raíz
+     */
+    public function on_site_id_updated($old_value, $new_value, $option) {
+        $new_value = sanitize_text_field(trim((string)$new_value));
+        if (!empty($new_value)) {
+            $this->generate_service_worker($new_value);
+            $this->generate_manifest();
+        }
+    }
+
+    /**
+     * Helpers de archivos con WP_Filesystem y fallback a file_put_contents
+     */
+    private function ensure_filesystem() {
+        if (!function_exists('WP_Filesystem')) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        $creds = request_filesystem_credentials(site_url());
+        if (!WP_Filesystem($creds)) {
+            // Puede fallar silenciosamente si no requiere credenciales
+        }
+        global $wp_filesystem;
+        return isset($wp_filesystem) && $wp_filesystem ? $wp_filesystem : null;
+    }
+
+    private function put_file($path, $content) {
+        $fs = $this->ensure_filesystem();
+        if ($fs && is_object($fs)) {
+            return (bool) $fs->put_contents($path, $content, FS_CHMOD_FILE);
+        }
+        // Fallback directo
+        return (bool) @file_put_contents($path, $content);
     }
     
     /**
