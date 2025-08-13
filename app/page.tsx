@@ -173,94 +173,109 @@ export default function HomePage() {
             <div className="mt-12 lg:mt-0 relative">
               <div className="relative">
                 {/* Browser mockup */}
-                <div className="bg-white dark:bg-gray-900 rounded-t-2xl shadow-2xl border border-gray-200 dark:border-gray-800 p-4">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <div className="w-3 h-3 bg-red-500 rounded-full" />
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-                    <div className="w-3 h-3 bg-green-500 rounded-full" />
-                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1 text-sm text-gray-600 dark:text-gray-300 text-center">tusitio.com</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg h-64 flex items-center justify-center relative overflow-hidden">
-                    {/* Fondo animado con partículas */}
-                    <div className="absolute inset-0">
-                      <div className="absolute top-8 left-8 w-1 h-1 bg-blue-400/30 rounded-full animate-pulse"></div>
-                      <div className="absolute top-16 right-12 w-2 h-2 bg-purple-400/20 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
-                      <div className="absolute bottom-12 left-6 w-1.5 h-1.5 bg-indigo-400/25 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                      <div className="absolute bottom-20 right-8 w-1 h-1 bg-pink-400/30 rounded-full animate-bounce" style={{animationDelay: '1.5s'}}></div>
-                      <div className="absolute top-1/2 left-4 w-0.5 h-0.5 bg-cyan-400/40 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+                <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-t-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {/* Barra superior de Safari con título y controles */}
+                  <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 p-2 flex items-center border-b border-gray-300 dark:border-gray-700">
+                    {/* Controles de ventana */}
+                    <div className="flex items-center space-x-1.5 mr-4 ml-1.5">
+                      <div className="w-3 h-3 bg-red-500 rounded-full shadow-inner flex items-center justify-center group cursor-pointer">
+                        <span className="text-red-800 opacity-0 group-hover:opacity-100 text-[8px] font-bold">×</span>
+                      </div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-inner flex items-center justify-center group cursor-pointer">
+                        <span className="text-yellow-800 opacity-0 group-hover:opacity-100 text-[8px] font-bold">−</span>
+                      </div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full shadow-inner flex items-center justify-center group cursor-pointer">
+                        <span className="text-green-800 opacity-0 group-hover:opacity-100 text-[8px] font-bold">+</span>
+                      </div>
                     </div>
-
-                    <div className="text-center z-10">
-                      {/* Ilustración 3D isométrica animada */}
-                      <div className="relative mx-auto mb-6 transform hover:scale-105 transition-transform duration-500">
-                        
-                        {/* Escritorio/Base 3D */}
-                        <div className="relative">
-                          <div className="w-40 h-6 bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 rounded-full transform perspective-1000 rotateX-60 shadow-2xl"></div>
-                        </div>
-
-                        {/* Monitor principal 3D */}
-                        <div className="relative -mt-3 transform perspective-1000">
-                          {/* Base del monitor */}
-                          <div className="w-8 h-8 bg-gradient-to-br from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 rounded-lg mx-auto mb-1 shadow-lg"></div>
+                    
+                    {/* Pestañas de Safari */}
+                    <div className="flex items-center space-x-1 flex-1 h-7">
+                      <div className="bg-white dark:bg-gray-700 rounded-t-lg px-3 py-1.5 text-xs text-gray-800 dark:text-gray-200 font-medium flex items-center space-x-1.5 border-b-0 shadow-inner relative h-full">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full opacity-80"></div>
+                        <span>NotiFly</span>
+                        {/* Indicador de pestaña activa */}
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"></div>
+                      </div>
+                      <div className="bg-gray-200 dark:bg-gray-800 rounded-t-lg px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center space-x-1.5 opacity-70">
+                        <span>Nueva pestaña</span>
+                      </div>
+                    </div>
+                    
+                    {/* Controles adicionales */}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-5 h-5 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <div className="w-2 h-2 border-t-2 border-r-2 border-gray-500 dark:border-gray-300 transform rotate-45 translate-x-[-1px]"></div>
+                      </div>
+                      <div className="w-5 h-5 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <div className="w-2 h-2 border-t-2 border-r-2 border-gray-500 dark:border-gray-300 transform rotate-[225deg] translate-x-[1px]"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Barra de dirección y herramientas */}
+                  <div className="bg-white dark:bg-gray-700 p-1.5 flex items-center space-x-2 border-b border-gray-200 dark:border-gray-600">
+                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-md px-3 py-1 text-sm text-gray-600 dark:text-gray-300 flex items-center">
+                      <div className="w-4 h-4 mr-2 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 dark:text-blue-400 w-full h-full">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                      </div>
+                      <span className="flex-1 text-xs font-medium">https://notifly.com</span>
+                      <div className="w-4 h-4 ml-2 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 dark:text-gray-500 w-full h-full">
+                          <path d="M18 15v3H6v-3"></path>
+                          <path d="M12 3v12"></path>
+                          <path d="m9 11 3 3 3-3"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="w-6 h-6 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <path d="m22 2-7 20-4-9-9-4Z"></path>
+                        <path d="M22 2 11 13"></path>
+                      </svg>
+                    </div>
+                    <div className="w-6 h-6 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <path d="M4 11a9 9 0 0 1 9 9"></path>
+                        <path d="M4 4a16 16 0 0 1 16 16"></path>
+                        <circle cx="5" cy="19" r="1"></circle>
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-gray-900 h-[400px] overflow-hidden relative">
+                    {/* Contenido de la página web de NotiFly */}
+                    <div className="h-full overflow-y-auto">
+                      {/* Header con gradiente */}
+                      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 p-3 relative">
+                        <div className="flex items-center justify-between">
+                          {/* Logo y nombre */}
+                          <div className="flex items-center space-x-2">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-lg">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-blue-600 dark:text-blue-400">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                              </svg>
+                            </div>
+                            <span className="text-white font-bold text-lg">NotiFly</span>
+                          </div>
                           
-                          {/* Pantalla principal */}
-                          <div className="w-36 h-24 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-xl shadow-2xl relative overflow-hidden mx-auto transform hover:rotate-y-5 transition-transform duration-700 border-2 border-white/20">
-                            {/* Marco de la pantalla */}
-                            <div className="absolute inset-1 bg-black/10 rounded-lg"></div>
-                            
-                            {/* Barra superior del navegador */}
-                            <div className="h-4 bg-white/15 backdrop-blur-sm flex items-center px-3 space-x-1.5 border-b border-white/10">
-                              <div className="w-2 h-2 bg-red-400 rounded-full shadow-sm animate-pulse"></div>
-                              <div className="w-2 h-2 bg-yellow-400 rounded-full shadow-sm animate-pulse" style={{animationDelay: '0.3s'}}></div>
-                              <div className="w-2 h-2 bg-green-400 rounded-full shadow-sm animate-pulse" style={{animationDelay: '0.6s'}}></div>
-                              <div className="flex-1 h-1.5 bg-white/20 rounded-full ml-2"></div>
-                            </div>
-                            
-                            {/* Contenido de la página con animaciones */}
-                            <div className="p-3 space-y-1.5">
-                              <div className="h-1.5 bg-white/50 rounded w-4/5 animate-pulse"></div>
-                              <div className="h-1 bg-white/40 rounded w-3/5 animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                              <div className="h-1 bg-white/35 rounded w-4/6 animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                              
-                              <div className="flex space-x-1.5 mt-3">
-                                <div className="w-4 h-4 bg-white/45 rounded shadow-sm animate-bounce" style={{animationDelay: '0.5s'}}></div>
-                                <div className="w-4 h-4 bg-white/35 rounded shadow-sm animate-bounce" style={{animationDelay: '0.8s'}}></div>
-                                <div className="w-4 h-4 bg-white/40 rounded shadow-sm animate-bounce" style={{animationDelay: '1.1s'}}></div>
-                              </div>
-                              
-                              {/* Simulación de gráfico */}
-                              <div className="flex items-end space-x-0.5 mt-2 h-6">
-                                <div className="w-1 bg-white/60 rounded-t animate-pulse" style={{height: '60%', animationDelay: '0.1s'}}></div>
-                                <div className="w-1 bg-white/50 rounded-t animate-pulse" style={{height: '80%', animationDelay: '0.3s'}}></div>
-                                <div className="w-1 bg-white/55 rounded-t animate-pulse" style={{height: '40%', animationDelay: '0.5s'}}></div>
-                                <div className="w-1 bg-white/65 rounded-t animate-pulse" style={{height: '90%', animationDelay: '0.7s'}}></div>
-                                <div className="w-1 bg-white/45 rounded-t animate-pulse" style={{height: '70%', animationDelay: '0.9s'}}></div>
-                              </div>
-                            </div>
-                            
-                            {/* Efectos de brillo dinámicos */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-white/25 animate-pulse"></div>
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                          {/* Navegación */}
+                          <div className="hidden sm:flex items-center space-x-4 text-xs text-white/90">
+                            <span>Inicio</span>
+                            <span>Cómo Funciona</span>
+                            <span>Precios</span>
                           </div>
-                        </div>
-
-                        {/* Dispositivos flotantes con animaciones 3D */}
-                        <div className="absolute -bottom-4 -right-6 transform hover:scale-110 transition-transform duration-500">
-                          <div className="w-10 h-16 bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-700 rounded-lg shadow-xl transform rotate-12 hover:rotate-6 transition-transform duration-700 border border-white/20">
-                            <div className="h-2 bg-white/20 rounded-t-lg"></div>
-                            <div className="p-1.5 space-y-0.5">
-                              <div className="h-0.5 bg-white/40 rounded w-full animate-pulse"></div>
-                              <div className="h-0.5 bg-white/30 rounded w-3/4 animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                              <div className="h-0.5 bg-white/35 rounded w-4/5 animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                              <div className="flex space-x-0.5 mt-1">
-                                <div className="w-1.5 h-1.5 bg-white/50 rounded animate-bounce" style={{animationDelay: '0.6s'}}></div>
-                                <div className="w-1.5 h-1.5 bg-white/40 rounded animate-bounce" style={{animationDelay: '0.8s'}}></div>
-                              </div>
-                            </div>
+                          
+                          {/* Botones de acción */}
+                          <div className="flex items-center space-x-2">
+                            <button className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded-md backdrop-blur-sm transition-colors">Iniciar Sesión</button>
+                            <button className="text-xs bg-white text-indigo-600 px-2 py-1 rounded-md font-medium shadow-md hover:shadow-lg transition-shadow">Comenzar Gratis</button>
                           </div>
                         </div>
                         
+                        {/* Elementos decorativos */}
                         <div className="absolute -top-2 -left-8 transform hover:scale-110 transition-transform duration-500">
                           <div className="w-8 h-6 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-md shadow-lg transform -rotate-12 hover:-rotate-6 transition-transform duration-700 border border-white/20">
                             <div className="p-1 space-y-0.5">
@@ -288,17 +303,82 @@ export default function HomePage() {
                         </div>
                       </div>
                       
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-pulse">
-                          Tu Sitio Web
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                          Conecta • Convierte • Crece
-                        </p>
-                        <div className="flex justify-center space-x-1">
-                          <div className="w-2 h-0.5 bg-blue-400 rounded-full animate-pulse"></div>
-                          <div className="w-2 h-0.5 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
-                          <div className="w-2 h-0.5 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
+                      {/* Hero Section */}
+                      <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+                        <div className="text-center">
+                          <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                            Reconecta con<br />
+                            <span className="text-4xl sm:text-5xl">tus visitantes</span>
+                          </h1>
+                          <p className="mt-3 max-w-md mx-auto text-base text-gray-600 dark:text-gray-400 sm:text-lg">
+                            Plataforma SaaS de notificaciones push web para negocios pequeños. <span className="text-blue-600 dark:text-blue-400 font-medium">Recupera clientes</span> que visitaron tu sitio pero no compraron.
+                          </p>
+                          <div className="mt-5 max-w-md mx-auto flex justify-center">
+                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                              Comenzar Gratis
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Stats */}
+                        <div className="mt-8 flex justify-center space-x-8 text-center">
+                          <div>
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">2.5M+</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Notificaciones Enviadas</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">95%</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Tasa de Entrega</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">12.3%</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">CTR Promedio</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Cómo Funciona */}
+                      <div className="py-8 bg-gray-50 dark:bg-gray-800">
+                        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                          <div className="text-center mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Cómo <span className="text-blue-600 dark:text-blue-400">Funciona</span></h2>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">En 3 pasos simples, tendrás tus notificaciones funcionando</p>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-6">
+                            <div className="text-center">
+                              <div className="mb-3 mx-auto w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xl">1</div>
+                              <div className="flex justify-center mb-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                  <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                              </div>
+                              <h3 className="font-medium text-gray-900 dark:text-white text-sm">Registra tu sitio</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Agrega un URL de tu sitio y obtén un script</p>
+                            </div>
+                            
+                            <div className="text-center">
+                              <div className="mb-3 mx-auto w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xl">2</div>
+                              <div className="flex justify-center mb-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                  <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                              </div>
+                              <h3 className="font-medium text-gray-900 dark:text-white text-sm">Recolecta suscriptores</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Los visitantes se suscriben a tus notificaciones</p>
+                            </div>
+                            
+                            <div className="text-center">
+                              <div className="mb-3 mx-auto w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xl">3</div>
+                              <div className="flex justify-center mb-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                  <Send className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                              </div>
+                              <h3 className="font-medium text-gray-900 dark:text-white text-sm">Envía notificaciones</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Crea y envía campañas desde el panel</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
