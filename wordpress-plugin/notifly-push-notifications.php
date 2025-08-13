@@ -533,12 +533,12 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
      * Maneja las solicitudes de archivos NotiFly (SW y Manifest)
      */
     public function handle_notifly_requests() {
-        if (isset($_GET['notifly_sw'])) {
+        if (isset($_GET['notifly_sw']) || isset($_GET['pushsaas-worker']) || isset($_GET['pushsaas_worker'])) {
             $this->serve_service_worker();
             exit;
         }
         
-        if (isset($_GET['notifly_manifest'])) {
+        if (isset($_GET['notifly_manifest']) || isset($_GET['pushsaas_manifest'])) {
             $this->serve_manifest();
             exit;
         }
