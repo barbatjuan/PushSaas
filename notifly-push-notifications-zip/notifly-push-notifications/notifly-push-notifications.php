@@ -22,6 +22,7 @@ class NotiFlyPlugin {
         add_action('admin_init', array($this, 'register_settings'));
         add_action('wp_head', array($this, 'insert_notifly_scripts'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        add_action('init', array($this, 'handle_notifly_requests'));
     }
     
     /**
@@ -132,8 +133,8 @@ class NotiFlyPlugin {
                                 // URLs a verificar
                                 const urls = {
                                     sdk: `${cdnBase}/sdk.js`,
-                                    sw: `${cdnBase}/sw.js`,
-                                    manifest: `${cdnBase}/manifest.json`
+                                    sw: `${window.location.origin}/?notifly_sw=1`,
+                                    manifest: `${window.location.origin}/?notifly_manifest=1`
                                 };
                                 
                                 // Verificar cada URL
@@ -489,20 +490,26 @@ class NotiFlyPlugin {
         
         echo "\n<!-- NotiFly Push Notifications -->\n";
         
-        // SDK Principal
+        // Configuración global
+        echo "<script>
+// Configurar NotiFly globalmente
+window.NOTIFLY_SITE_ID = '{$site_id}';
+window.NOTIFLY_API_BASE = 'https://www.adioswifi.es';
+</script>\n";
+        
+        // SDK Principal desde CDN
         echo "<script src='{$this->cdn_base}/sdk.js' async></script>\n";
         
-        // Web App Manifest
-        echo "<link rel='manifest' href='{$this->cdn_base}/manifest.json'>\n";
+        // Web App Manifest local (mismo dominio)
+        $manifest_url = home_url('/?notifly_manifest=1');
+        echo "<link rel='manifest' href='{$manifest_url}'>\n";
         
-        // Registro del Service Worker
+        // Service Worker local (mismo dominio)
+        $sw_url = home_url('/?notifly_sw=1');
         echo "<script>
-// Configurar Site ID globalmente
-window.NOTIFLY_SITE_ID = '{$site_id}';
-
 if ('serviceWorker' in navigator && 'PushManager' in window) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('{$this->cdn_base}/sw.js')
+        navigator.serviceWorker.register('{$sw_url}')
             .then(function(registration) {
                 console.log('✅ NotiFly: Service Worker registrado exitosamente');
             })
@@ -516,6 +523,112 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
 </script>\n";
         
         echo "<!-- /NotiFly Push Notifications -->\n\n";
+    }
+    
+    /**
+     * Maneja las solicitudes de archivos NotiFly (SW y Manifest)
+     */
+    public function handle_notifly_requests() {
+        if (isset($_GET['notifly_sw'])) {
+            $this->serve_service_worker();
+            exit;
+        }
+        
+        if (isset($_GET['notifly_manifest'])) {
+            $this->serve_manifest();
+            exit;
+        }
+    }
+    
+    /**
+     * Sirve el Service Worker localmente
+     */
+    private function serve_service_worker() {
+        $site_id = get_option($this->option_name);
+        if (empty($site_id)) {
+            http_response_code(404);
+            exit;
+        }
+        
+        header('Content-Type: application/javascript');
+        header('Service-Worker-Allowed: /');
+        
+        // Service Worker básico para NotiFly
+        echo "
+// NotiFly Service Worker - Generado dinámicamente
+const SITE_ID = '{$site_id}';
+const API_BASE = 'https://www.adioswifi.es';
+
+self.addEventListener('push', function(event) {
+    if (!event.data) return;
+    
+    try {
+        const data = event.data.json();
+        const options = {
+            body: data.body || 'Nueva notificación',
+            icon: data.icon || '/favicon.ico',
+            badge: data.badge || '/favicon.ico',
+            tag: data.tag || 'notifly-notification',
+            data: data.data || {},
+            actions: data.actions || []
+        };
+        
+        event.waitUntil(
+            self.registration.showNotification(data.title || 'Nueva notificación', options)
+        );
+    } catch (error) {
+        console.error('Error processing push notification:', error);
+    }
+});
+
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    
+    const url = event.notification.data?.url || '/';
+    
+    event.waitUntil(
+        clients.openWindow(url)
+    );
+});
+
+console.log('NotiFly Service Worker loaded for site:', SITE_ID);
+";
+    }
+    
+    /**
+     * Sirve el Web App Manifest localmente
+     */
+    private function serve_manifest() {
+        $site_id = get_option($this->option_name);
+        if (empty($site_id)) {
+            http_response_code(404);
+            exit;
+        }
+        
+        header('Content-Type: application/json');
+        
+        $site_name = get_bloginfo('name');
+        $site_url = home_url();
+        
+        $manifest = array(
+            'name' => $site_name,
+            'short_name' => $site_name,
+            'description' => get_bloginfo('description'),
+            'start_url' => $site_url,
+            'scope' => $site_url,
+            'display' => 'standalone',
+            'background_color' => '#ffffff',
+            'theme_color' => '#000000',
+            'icons' => array(
+                array(
+                    'src' => $site_url . '/favicon.ico',
+                    'sizes' => '32x32',
+                    'type' => 'image/x-icon'
+                )
+            )
+        );
+        
+        echo json_encode($manifest, JSON_PRETTY_PRINT);
     }
 }
 
