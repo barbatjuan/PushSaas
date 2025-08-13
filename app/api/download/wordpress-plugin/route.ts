@@ -134,7 +134,7 @@ Versión revolucionaria que elimina la necesidad de subir archivos manualmente. 
     const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
 
     // Crear respuesta con headers para descarga
-    const response = new NextResponse(zipBuffer, {
+    const response = new NextResponse(zipBuffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
