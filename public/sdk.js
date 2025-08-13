@@ -5,10 +5,17 @@
 (function() {
   'use strict';
 
-  // Get the site ID from the script tag
+  // Get the site ID from multiple sources
   const scriptTag = document.currentScript || document.querySelector('script[data-site]');
   let siteId = scriptTag ? scriptTag.getAttribute('data-site') : null;
-  const apiBase = scriptTag.getAttribute('data-api') || 'https://web-push-notifications-phi.vercel.app';
+  
+  // If not found in script tag, try global variable (WordPress plugin)
+  if (!siteId && window.NOTIFLY_SITE_ID) {
+    siteId = window.NOTIFLY_SITE_ID;
+    console.log('🔧 NotiFly: Using Site ID from global variable');
+  }
+  
+  const apiBase = scriptTag ? scriptTag.getAttribute('data-api') : null || 'https://web-push-notifications-phi.vercel.app';
   
   // Force correct site ID for webcoders.es (temporary fix)
   if (window.location.hostname === 'webcoders.es' || siteId === '34c91fe84b42') {
@@ -17,7 +24,7 @@
   }
   
   if (!siteId) {
-    console.error('NotiFly SDK: data-site attribute is required');
+    console.error('NotiFly SDK: Site ID is required. Use data-site attribute or set window.NOTIFLY_SITE_ID');
     return;
   }
 
