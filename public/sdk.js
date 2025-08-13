@@ -15,7 +15,9 @@
     console.log('🔧 NotiFly: Using Site ID from global variable');
   }
   
-  const apiBase = scriptTag ? scriptTag.getAttribute('data-api') : null || 'https://web-push-notifications-phi.vercel.app';
+  const apiBase = (scriptTag ? scriptTag.getAttribute('data-api') : null) || 
+                  window.NOTIFLY_API_BASE || 
+                  'https://www.adioswifi.es';
   
   // Force correct site ID for webcoders.es (temporary fix)
   if (window.location.hostname === 'webcoders.es' || siteId === '34c91fe84b42') {
