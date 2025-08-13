@@ -3,7 +3,7 @@
 import { useCurrentUser } from '@/lib/hooks/use-user'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Users, Bell, TrendingUp } from 'lucide-react'
+import { Plus, Users, Bell, TrendingUp, Download, FileText, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -249,6 +249,119 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* WordPress Plugin Download Section */}
+      <Card className="border-0 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 shadow-xl border-l-4 border-purple-500 dark:border-purple-400 hover:shadow-2xl transition-all duration-300">
+        <CardHeader>
+          <CardTitle className="text-purple-800 dark:text-purple-300 flex items-center gap-2">
+            <Download className="h-5 w-5" />
+            Plugin WordPress - Integración Ultra-Simple
+          </CardTitle>
+          <CardDescription className="text-purple-700 dark:text-purple-200">
+            Instala NotiFly en WordPress con solo tu Site ID. Sin archivos manuales, sin FTP, sin complicaciones.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Configuración en 2 minutos</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">CDN automático incluido</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Verificación visual</span>
+            </div>
+          </div>
+
+          {/* Download Button */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <Button 
+              onClick={() => {
+                // Trigger download
+                const link = document.createElement('a');
+                link.href = '/api/download/wordpress-plugin';
+                link.download = 'notifly-push-notifications.zip';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200 flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Descargar Plugin WordPress (.zip)
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Open documentation in new tab
+                window.open('https://github.com/notifly/wordpress-plugin#readme', '_blank');
+              }}
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Ver Documentación
+            </Button>
+          </div>
+
+          {/* Step by Step Guide */}
+          <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              📋 Guía de Instalación Paso a Paso
+            </h3>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">1</div>
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Descarga el Plugin</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Haz clic en "Descargar Plugin WordPress (.zip)" arriba para obtener el archivo <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">notifly-push-notifications.zip</code></p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">2</div>
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Sube a WordPress</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Ve a <strong>Plugins → Añadir nuevo → Subir plugin</strong> y sube el archivo ZIP descargado. WordPress lo descomprimirá automáticamente y luego podrás activarlo.</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">3</div>
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Configura tu Site ID</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Ve a <strong>Configuración → NotiFly</strong> en tu WordPress y pega tu Site ID. Puedes copiar tu Site ID desde la sección de sitios.</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">✓</div>
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">¡Listo! 🎉</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">El plugin verificará automáticamente la integración y mostrará el estado. ¡Ya puedes empezar a recolectar suscriptores!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Access to Site IDs */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+            <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">💡 ¿Necesitas tu Site ID?</h4>
+            <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+              Encuentra el Site ID de cualquiera de tus sitios registrados:
+            </p>
+            <Link href="/dashboard/sites">
+              <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/30">
+                Ver Mis Sitios y Site IDs
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Plan Status */}
       {user.plan === 'free' && stats.totalSubscribers > 15 && (
