@@ -479,6 +479,43 @@
     }
   }
 
+  // Sync subscription with backend
+  async function syncSubscriptionWithBackend(subscription) {
+    try {
+      // Add cache-busting parameter
+      const cacheBuster = Date.now();
+      const url = `${apiBase}/api/push/subscribe?v=${cacheBuster}`;
+
+      console.log('🔄 PushSaaS: Syncing subscription to:', url);
+      const payload = {
+        siteId: siteId,
+        subscription: subscription.toJSON(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        timestamp: new Date().toISOString()
+      };
+      console.log('📦 PushSaaS: Payload:', payload);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to sync subscription with backend: ${response.status}`);
+      }
+
+      console.log('✅ PushSaaS: Subscription synced with backend');
+      
+    } catch (error) {
+      console.error('❌ PushSaaS: Failed to sync subscription:', error);
+      throw error;
+    }
+  }
+
   // Fetch VAPID public key from backend
   async function fetchVapidKey() {
     try {
@@ -708,48 +745,6 @@
     } catch (error) {
       console.error('❌ PushSaaS: Subscription failed:', error);
       return false;
-    }
-  }
-
-  // Sync subscription with backend
-  async function syncSubscriptionWithBackend(subscription) {
-    try {
-      // Add cache-busting parameter
-      const cacheBuster = Date.now();
-      const url = `${apiBase}/api/subscribe?v=${cacheBuster}`;
-      
-      console.log('🔄 PushSaaS: Syncing subscription to:', url);
-      console.log('📦 PushSaaS: Payload:', {
-        siteId: siteId,
-        subscription: subscription.toJSON(),
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date().toISOString()
-      });
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          siteId: siteId,
-          subscription: subscription.toJSON(),
-          userAgent: navigator.userAgent,
-          url: window.location.href,
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to sync subscription with backend');
-      }
-
-      console.log('✅ PushSaaS: Subscription synced with backend');
-      
-    } catch (error) {
-      console.error('❌ PushSaaS: Failed to sync subscription:', error);
-      throw error;
     }
   }
 
