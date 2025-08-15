@@ -26,13 +26,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Verificar que el sitio existe, buscando por site_id (texto) o por id (uuid)
-    const { data: siteData, error: siteError } = await supabaseAdmin
+    // Verificar que el sitio existe, aceptando tanto site_id (texto) como id (uuid)
+    let { data: siteData, error: siteError } = await supabaseAdmin
       .from('sites')
       .select('id, user_id, site_id')
       .eq('site_id', siteId)
       .eq('status', 'active')
       .single();
+
+    if (siteError || !siteData) {
+      // Intento 2: buscar por UUID en columna id
+      const tryByUuid = await supabaseAdmin
+        .from('sites')
+        .select('id, user_id, site_id')
+        .eq('id', siteId)
+        .eq('status', 'active')
+        .single();
+      siteData = tryByUuid.data;
+      siteError = tryByUuid.error;
+    }
 
     if (siteError || !siteData) {
       return res.status(404).json({ error: 'Site not found or inactive' });
