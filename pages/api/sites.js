@@ -29,10 +29,15 @@ export default async function handler(req, res) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const candidate0 = Array.isArray(userId) ? userId[0] : userId;
     // Normalizar: decodificar, recortar espacios y quitar comillas envolventes
-    const candidate = decodeURIComponent(String(candidate0))
+    let candidate = decodeURIComponent(String(candidate0))
       .trim()
       .replace(/^"+|"+$/g, '')
       .replace(/^'+|'+$/g, '');
+    
+    // Si no tiene guiones pero tiene 32 caracteres hex, convertir a formato UUID
+    if (candidate.length === 32 && /^[0-9a-f]{32}$/i.test(candidate)) {
+      candidate = candidate.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+    }
 
     // Si parece un UUID, úsalo directamente
     if (candidate && uuidRegex.test(candidate)) {
