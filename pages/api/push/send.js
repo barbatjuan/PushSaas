@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../../lib/db';
+import { supabaseAdmin } from '../../../lib/supabase';
 import webpush from 'web-push';
 import { v4 as uuidv4 } from 'uuid';
 

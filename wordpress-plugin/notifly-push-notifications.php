@@ -16,6 +16,7 @@ class NotiFlyPlugin {
     
     private $option_name = 'notifly_site_id';
     private $cdn_base = 'https://www.adioswifi.es';
+    private $version = '2.2.0'; // Mantener en sync con el header del plugin para cache-busting del SDK
     private $logo_option = 'notifly_pwa_logo_id'; // attachment ID opcional del logo
     
     public function __construct() {
@@ -208,7 +209,7 @@ class NotiFlyPlugin {
                             try {
                                 // URLs a verificar
                                 const urls = {
-                                    sdk: `${cdnBase}/sdk.js`,
+                                    sdk: `${cdnBase}/sdk.js?v=<?php echo $this->version; ?>`,
                                     sw: `${window.location.origin}/sw.js`,
                                     manifest: `${window.location.origin}/notifly/manifest.json`
                                 };
@@ -573,8 +574,8 @@ window.NOTIFLY_SITE_ID = '{$site_id}';
 window.NOTIFLY_API_BASE = 'https://www.adioswifi.es';
 </script>\n";
         
-        // SDK Principal desde CDN
-        echo "<script src='{$this->cdn_base}/sdk.js' async></script>\n";
+        // SDK Principal desde CDN con cache-busting por versión del plugin
+        echo "<script src='{$this->cdn_base}/sdk.js?v={$this->version}' async></script>\n";
         
         // Web App Manifest: usar ruta limpia bajo /notifly para evitar bloqueos por query
         $manifest_url = home_url('/notifly/manifest.json');

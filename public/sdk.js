@@ -658,10 +658,38 @@
       console.log('✅ PushSaaS: Permission granted');
 
       // Subscribe to push manager with persistent configuration
-      const subscription = await serviceWorkerRegistration.pushManager.subscribe({
-        userVisibleOnly: true, // Required for persistent subscriptions
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-      });
+      let subscription;
+      try {
+        subscription = await serviceWorkerRegistration.pushManager.subscribe({
+          userVisibleOnly: true, // Required for persistent subscriptions
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        });
+      } catch (subError) {
+        const msg = (subError && (subError.name || '') + ':' + (subError.message || '')) || '';
+        const isInvalidState =
+          (subError && subError.name === 'InvalidStateError') ||
+          /InvalidStateError/i.test(msg) ||
+          /different applicationServerKey/i.test(msg);
+        if (isInvalidState) {
+          console.warn('⚠️ PushSaaS: InvalidStateError detected. Attempting auto-recovery (unsubscribe + resubscribe)...');
+          try {
+            const existing = await serviceWorkerRegistration.pushManager.getSubscription();
+            if (existing) {
+              await existing.unsubscribe();
+              console.log('🔄 PushSaaS: Old subscription removed. Retrying subscribe...');
+            }
+            subscription = await serviceWorkerRegistration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+          } catch (recoverError) {
+            console.error('❌ PushSaaS: Auto-recovery failed:', recoverError);
+            throw recoverError;
+          }
+        } else {
+          throw subError;
+        }
+      }
       
       console.log('🔐 PushSaaS: Subscription created with endpoint:', subscription.endpoint);
       console.log('🔑 PushSaaS: Subscription keys:', {

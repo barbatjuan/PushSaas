@@ -1,7 +1,7 @@
 // Script para asegurar que ambos site_id (y70tplqd4an y c670c8bcd133)
 // estén asociados al usuario usuario8f81263a-b753-4c62-a504-14dee864c957
 
-import { supabaseAdmin } from '../lib/db';
+import { supabaseAdmin } from '../lib/supabase';
 
 async function updateSiteIds() {
   console.log('Iniciando actualización de site_ids...');
