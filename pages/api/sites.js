@@ -6,11 +6,11 @@ import webpush from 'web-push';
 export default async function handler(req, res) {
   // Endpoint público para desarrollo y producción
   // Acepta:
-  // - userId: UUID interno de la tabla users.id
+  // - userId o user_id: UUID interno de la tabla users.id
   // Nota: en POST también aceptaremos en el body
-  const { userId: qUserId } = req.query;
-  const { userId: bUserId } = (req.method === 'POST' ? (req.body || {}) : {});
-  const userId = qUserId || bUserId;
+  const { userId: qUserId, user_id: qUserIdSnake } = req.query;
+  const { userId: bUserId, user_id: bUserIdSnake } = (req.method === 'POST' ? (req.body || {}) : {});
+  const userId = qUserId || qUserIdSnake || bUserId || bUserIdSnake;
 
   if (!userId) {
     return res.status(400).json({ error: 'userId (UUID) es requerido' });
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
   const userUUID = await resolveUserUUID();
   if (!userUUID) {
-    return res.status(404).json({ error: 'Usuario no encontrado para el identificador proporcionado' });
+    return res.status(404).json({ error: 'Usuario no encontrado para el identificador proporcionado', received: String(userId) });
   }
 
   if (req.method === 'GET') {
