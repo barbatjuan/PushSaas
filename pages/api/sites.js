@@ -8,6 +8,14 @@ export default async function handler(req, res) {
   // Acepta:
   // - userId o user_id: UUID interno de la tabla users.id
   // Nota: en POST también aceptaremos en el body
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   const { userId: qUserId, user_id: qUserIdSnake } = req.query;
   const { userId: bUserId, user_id: bUserIdSnake } = (req.method === 'POST' ? (req.body || {}) : {});
   const userId = qUserId || qUserIdSnake || bUserId || bUserIdSnake;
@@ -19,11 +27,16 @@ export default async function handler(req, res) {
   // Resolver el UUID interno del usuario a partir de userId
   async function resolveUserUUID() {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const raw = Array.isArray(userId) ? userId[0] : userId;
+    const candidate0 = Array.isArray(userId) ? userId[0] : userId;
+    // Normalizar: decodificar, recortar espacios y quitar comillas envolventes
+    const candidate = decodeURIComponent(String(candidate0))
+      .trim()
+      .replace(/^"+|"+$/g, '')
+      .replace(/^'+|'+$/g, '');
 
     // Si parece un UUID, úsalo directamente
-    if (raw && uuidRegex.test(raw)) {
-      return raw;
+    if (candidate && uuidRegex.test(candidate)) {
+      return candidate;
     }
 
     // Si no es UUID válido, no resolver
@@ -35,7 +48,7 @@ export default async function handler(req, res) {
     return res.status(404).json({ 
       error: 'Usuario no encontrado para el identificador proporcionado', 
       received: String(userId),
-      note: 'Si envías user_id repetido produce array; ahora tomamos el primero.'
+      note: 'Se normaliza user_id (decodeURIComponent + trim + sin comillas).'
     });
   }
 
