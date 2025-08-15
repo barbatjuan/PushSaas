@@ -3,7 +3,7 @@
 Plugin Name: NotiFly Push Notifications
 Plugin URI: https://notifly.com
 Description: Integra NotiFly en WordPress con mínimo esfuerzo. Solo introduce tu Site ID y listo.
-Version: 2.1.0
+Version: 2.2.0
 Author: NotiFly Team
 Author URI: https://notifly.com
 License: GPL v2 or later
@@ -16,6 +16,7 @@ class NotiFlyPlugin {
     
     private $option_name = 'notifly_site_id';
     private $cdn_base = 'https://www.adioswifi.es';
+    private $logo_option = 'notifly_pwa_logo_id'; // attachment ID opcional del logo
     
     public function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -25,6 +26,79 @@ class NotiFlyPlugin {
         add_action('init', array($this, 'handle_notifly_requests'));
         // Regenerar archivos cuando cambie el Site ID
         add_action('update_option_' . $this->option_name, array($this, 'on_site_id_updated'), 10, 3);
+    }
+
+    /**
+     * Sirve iconos PWA 192/512 desde el mismo dominio.
+     * Si existe un logo del cliente (attachment ID en option), genera PNG redimensionado y lo cachea en uploads.
+     * Si no, hace proxy de los iconos por defecto desde el CDN.
+     */
+    private function serve_icon($size) {
+        header('Content-Type: image/png');
+        $cache_path = $this->get_icons_dir() . "/notifly-{$size}.png";
+        if (file_exists($cache_path)) {
+            readfile($cache_path);
+            return;
+        }
+
+        // Intentar generar desde logo del cliente
+        $attachment_id = intval(get_option($this->logo_option));
+        if ($attachment_id) {
+            $generated = $this->generate_icon_from_attachment($attachment_id, $size, $cache_path);
+            if ($generated && file_exists($cache_path)) {
+                readfile($cache_path);
+                return;
+            }
+        }
+
+        // Fallback: proxy icono por defecto desde CDN
+        $src = $this->cdn_base . ($size === 192 ? '/icon-192.png' : '/icon-512.png');
+        $this->proxy_binary($src, $cache_path);
+        if (file_exists($cache_path)) {
+            readfile($cache_path);
+            return;
+        }
+        // Último recurso: redirigir
+        header("Location: $src", true, 302);
+    }
+
+    private function get_icons_dir() {
+        $upload_dir = wp_upload_dir();
+        $dir = trailingslashit($upload_dir['basedir']) . 'notifly-icons';
+        if (!file_exists($dir)) {
+            wp_mkdir_p($dir);
+        }
+        return $dir;
+    }
+
+    private function proxy_binary($url, $save_path) {
+        $response = wp_remote_get($url, array('timeout' => 15));
+        if (is_wp_error($response)) return false;
+        $code = wp_remote_retrieve_response_code($response);
+        if ($code !== 200) return false;
+        $body = wp_remote_retrieve_body($response);
+        if (!$body) return false;
+        $this->put_file($save_path, $body);
+        return true;
+    }
+
+    private function generate_icon_from_attachment($attachment_id, $size, $save_path) {
+        $path = get_attached_file($attachment_id);
+        if (!$path || !file_exists($path)) return false;
+        $editor = wp_get_image_editor($path);
+        if (is_wp_error($editor)) return false;
+        // Hacer cuadrado: recorte centrado
+        $info = getimagesize($path);
+        if (!$info) return false;
+        $w = $info[0];
+        $h = $info[1];
+        $side = min($w, $h);
+        $x = max(0, intval(($w - $side) / 2));
+        $y = max(0, intval(($h - $side) / 2));
+        $editor->crop($x, $y, $side, $side);
+        $editor->resize($size, $size, true);
+        $saved = $editor->save($save_path, 'image/png');
+        return !is_wp_error($saved);
     }
     
     /**
@@ -135,8 +209,8 @@ class NotiFlyPlugin {
                                 // URLs a verificar
                                 const urls = {
                                     sdk: `${cdnBase}/sdk.js`,
-                                    sw: `${window.location.origin}/?notifly_sw=1`,
-                                    manifest: `${window.location.origin}/?notifly_manifest=1`
+                                    sw: `${window.location.origin}/sw.js`,
+                                    manifest: `${window.location.origin}/notifly/manifest.json`
                                 };
                                 
                                 // Verificar cada URL
@@ -502,14 +576,59 @@ window.NOTIFLY_API_BASE = 'https://www.adioswifi.es';
         // SDK Principal desde CDN
         echo "<script src='{$this->cdn_base}/sdk.js' async></script>\n";
         
-        // Web App Manifest preferentemente desde la raíz; fallback al endpoint dinámico
-        $manifest_path = ABSPATH . 'manifest.json';
-        $manifest_url = file_exists($manifest_path) ? home_url('/manifest.json') : home_url('/?notifly_manifest=1');
+        // Web App Manifest: usar ruta limpia bajo /notifly para evitar bloqueos por query
+        $manifest_url = home_url('/notifly/manifest.json');
         echo "<link rel='manifest' href='{$manifest_url}'>\n";
+        // Script de diagnóstico PWA: valida manifest e iconos y elimina manifests conflictivos
+        echo "<script>(function(){\n".
+             "try {\n".
+             "  const ourManifestHref = '{$manifest_url}';\n".
+             "  const links = Array.from(document.querySelectorAll(\"link[rel='manifest']\"));\n".
+             "  console.log('[NotiFly][PWA] Manifest links encontrados:', links.map(l=>l.href));\n".
+             "  // Mantener el nuestro y eliminar otros para evitar que el theme sobreescriba\n".
+             "  links.forEach(l=>{ if(l.href !== ourManifestHref) { l.parentNode && l.parentNode.removeChild(l); } });\n".
+             "  let manifestEl = document.querySelector(\"link[rel='manifest']\");\n".
+             "  if (!manifestEl) { manifestEl = document.createElement('link'); manifestEl.rel='manifest'; manifestEl.href=ourManifestHref; document.head.appendChild(manifestEl); }\n".
+             "  console.log('[NotiFly][PWA] Manifest activo:', manifestEl.href);\n".
+             "  // Fetch del manifest\n".
+             "  fetch(manifestEl.href, { cache: 'reload' }).then(async r=>{\n".
+             "    console.log('[NotiFly][PWA] Manifest status:', r.status, 'content-type:', r.headers.get('content-type'));\n".
+             "    const txt = await r.text();\n".
+             "    let json = null;\n".
+             "    try { json = JSON.parse(txt); } catch(e){ console.warn('[NotiFly][PWA] Manifest no es JSON válido:', e); }\n".
+             "    if (json && Array.isArray(json.icons)) {\n".
+             "      console.log('[NotiFly][PWA] Icons en manifest:', json.icons);\n".
+             "      const has192 = json.icons.some(i=>String(i.sizes).includes('192'));\n".
+             "      const has512 = json.icons.some(i=>String(i.sizes).includes('512'));\n".
+             "      console.log('[NotiFly][PWA] Icons 192/512 presentes:', has192, has512);\n".
+             "    } else {\n".
+             "      console.warn('[NotiFly][PWA] Manifest sin icons o estructura inesperada');\n".
+             "    }\n".
+             "  }).catch(err=>{ console.error('[NotiFly][PWA] Error al obtener manifest:', err); });\n".
+             "  // Probar endpoints de iconos 192/512\n".
+             "  function testIcon(size){\n".
+             "    const iconUrl = new URL('/notifly/icon-' + size + '.png', window.location.origin).href;\n".
+             "    fetch(iconUrl, { cache: 'reload' }).then(r=>{\n".
+             "      console.log(`[NotiFly][PWA] Icon ${size} status:`, r.status, 'content-type:', r.headers.get('content-type'));\n".
+             "      const img = new Image();\n".
+             "      img.onload = function(){ console.log(`[NotiFly][PWA] Icon ${size} dimensiones:`, img.naturalWidth+'x'+img.naturalHeight); }\n".
+             "      img.onerror = function(){ console.warn(`[NotiFly][PWA] Icon ${size} no carga como imagen`); }\n".
+             "      img.src = iconUrl + '?_=' + Date.now();\n".
+             "    }).catch(err=>{ console.error(`[NotiFly][PWA] Error fetch icon ${size}:`, err); });\n".
+             "  }\n".
+             "  testIcon(192);\n".
+             "  testIcon(512);\n".
+             "  // Capturar beforeinstallprompt (Chromium)\n".
+             "  window.addEventListener('beforeinstallprompt', (e)=>{\n".
+             "    e.preventDefault();\n".
+             "    window.notiflyDeferredPrompt = e;\n".
+             "    console.log('[NotiFly][PWA] beforeinstallprompt capturado. Instalabilidad OK. Llama notiflyDeferredPrompt.prompt() tras una acción del usuario.');\n".
+             "  });\n".
+             "} catch(ex){ console.error('[NotiFly][PWA] Error script diagnóstico:', ex); }\n".
+             "})();</script>\n";
         
-        // Service Worker preferentemente desde la raíz; fallback al endpoint dinámico
-        $sw_path = ABSPATH . 'sw.js';
-        $sw_url = file_exists($sw_path) ? home_url('/sw.js') : home_url('/?notifly_sw=1');
+        // Service Worker desde raíz (virtual si no existe archivo físico) para obtener scope '/'
+        $sw_url = home_url('/sw.js');
         echo "<script>
 if ('serviceWorker' in navigator && 'PushManager' in window) {
     window.addEventListener('load', function() {
@@ -533,6 +652,57 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
      * Maneja las solicitudes de archivos NotiFly (SW y Manifest)
      */
     public function handle_notifly_requests() {
+        // Soporte por rutas limpias virtuales y archivos físicos (si existen)
+        $req_path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
+        // Normalizar por si hay subpaths o index.php delante
+        if ($req_path && (rtrim($req_path, '/') === '/sw.js' || substr($req_path, -6) === '/sw.js')) {
+            $physical = ABSPATH . 'sw.js';
+            if (!file_exists($physical)) {
+                $this->serve_service_worker();
+                exit;
+            }
+        }
+        // Ruta limpia: /notifly/sw.js
+        if ($req_path && (rtrim($req_path, '/') === '/notifly/sw.js' || substr($req_path, -14) === '/notifly/sw.js')) {
+            $this->serve_service_worker();
+            exit;
+        }
+        if ($req_path && (rtrim($req_path, '/') === '/manifest.json' || substr($req_path, -13) === '/manifest.json')) {
+            $physical = ABSPATH . 'manifest.json';
+            if (!file_exists($physical)) {
+                $this->serve_manifest();
+                exit;
+            }
+        }
+        // Ruta limpia: /notifly/manifest.json
+        if ($req_path && (rtrim($req_path, '/') === '/notifly/manifest.json' || substr($req_path, -20) === '/notifly/manifest.json')) {
+            $this->serve_manifest();
+            exit;
+        }
+
+        // Rutas limpias de iconos
+        if ($req_path && (rtrim($req_path, '/') === '/notifly/icon-192.png' || substr($req_path, -20) === '/notifly/icon-192.png')) {
+            $this->serve_icon(192);
+            exit;
+        }
+        if ($req_path && (rtrim($req_path, '/') === '/notifly/icon-512.png' || substr($req_path, -20) === '/notifly/icon-512.png')) {
+            $this->serve_icon(512);
+            exit;
+        }
+
+        // Endpoints de iconos PWA servidos desde el mismo dominio
+        if (isset($_GET['notifly_icon'])) {
+            $size = intval($_GET['notifly_icon']);
+            if (!in_array($size, array(192, 512), true)) {
+                http_response_code(400);
+                header('Content-Type: text/plain; charset=utf-8');
+                echo 'Invalid icon size';
+                exit;
+            }
+            $this->serve_icon($size);
+            exit;
+        }
+
         if (isset($_GET['notifly_sw']) || isset($_GET['pushsaas-worker']) || isset($_GET['pushsaas_worker'])) {
             $this->serve_service_worker();
             exit;
@@ -554,17 +724,16 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
             exit;
         }
         
-        header('Content-Type: application/javascript');
+        header('Content-Type: application/javascript; charset=utf-8');
         header('Service-Worker-Allowed: /');
         
         // Service Worker local mínimo: delega toda la lógica al SW centralizado
         echo "
-// NotiFly Service Worker (local mínimo) - Generado dinámicamente
-const SITE_ID = '{$site_id}';
-// Importa el SW centralizado desde CDN con el Site ID del cliente
-importScripts('{$this->cdn_base}/sw.js?site=' + SITE_ID);
-console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);
-";
+// NotiFly Service Worker (local minimo) - Generado dinamicamente\n".
+             "const SITE_ID = '" . addslashes($site_id) . "';\n".
+             "// Importa el SW centralizado desde CDN con el Site ID del cliente\n".
+             "importScripts('" . addslashes($this->cdn_base) . "/sw.js?site=' + SITE_ID);\n".
+             "console.log('[NotiFly][SW] Importando SW central para site:', SITE_ID);\n";
     }
 
     /**
@@ -598,9 +767,16 @@ console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);
             'theme_color' => '#000000',
             'icons' => array(
                 array(
-                    'src' => $site_url . '/favicon.ico',
-                    'sizes' => '32x32',
-                    'type' => 'image/x-icon'
+                    'src' => home_url('/notifly/icon-192.png'),
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
+                ),
+                array(
+                    'src' => home_url('/notifly/icon-512.png'),
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
                 )
             )
         );
@@ -653,15 +829,18 @@ console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);
             exit;
         }
         
-        header('Content-Type: application/json');
+        // Cabeceras recomendadas para manifest
+        header('Content-Type: application/manifest+json; charset=utf-8');
+        header('Cache-Control: public, max-age=300');
         
         $site_name = get_bloginfo('name');
-        $site_url = home_url();
+        $site_desc = get_bloginfo('description');
+        $site_url  = home_url();
         
-        $manifest = array(
+        $manifest  = array(
             'name' => $site_name,
             'short_name' => $site_name,
-            'description' => get_bloginfo('description'),
+            'description' => $site_desc,
             'start_url' => $site_url,
             'scope' => $site_url,
             'display' => 'standalone',
@@ -669,14 +848,21 @@ console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);
             'theme_color' => '#000000',
             'icons' => array(
                 array(
-                    'src' => $site_url . '/favicon.ico',
-                    'sizes' => '32x32',
-                    'type' => 'image/x-icon'
+                    'src' => home_url('/notifly/icon-192.png'),
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
+                ),
+                array(
+                    'src' => home_url('/notifly/icon-512.png'),
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
                 )
             )
         );
         
-        echo json_encode($manifest, JSON_PRETTY_PRINT);
+        echo json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }
 

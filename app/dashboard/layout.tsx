@@ -104,12 +104,28 @@ export default function DashboardLayout({
                 )}
               </Button>
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 bg-blue-600 rounded-full text-white flex items-center justify-center text-sm">
-                  {(user?.email?.[0] || 'U').toUpperCase()}
+                {/* Avatar dropdown */}
+                <div className="relative">
+                  <details className="group">
+                    <summary className="list-none cursor-pointer select-none">
+                      <div className="h-8 w-8 bg-blue-600 rounded-full text-white flex items-center justify-center text-sm shadow-sm ring-1 ring-blue-500/20">
+                        {(user?.email?.[0] || 'U').toUpperCase()}
+                      </div>
+                    </summary>
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1b26] border border-gray-200 dark:border-[#414868]/30 rounded-lg shadow-xl p-3 z-50">
+                      <div className="px-2 pb-2 border-b border-gray-200 dark:border-[#414868]/30 mb-2">
+                        <div className="text-sm font-medium text-gray-900 dark:text-[#c0caf5] truncate">
+                          {user?.email || 'Usuario'}
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <Link href="/dashboard" className="px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-[#414868]/20 text-gray-700 dark:text-[#a9b1d6]">Perfil</Link>
+                        <Link href="/dashboard/sites" className="px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-[#414868]/20 text-gray-700 dark:text-[#a9b1d6]">Configuración</Link>
+                        <button onClick={() => signOut()} className="text-left px-3 py-2 text-sm rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400">Cerrar sesión</button>
+                      </div>
+                    </div>
+                  </details>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => signOut()}>
-                  Cerrar sesión
-                </Button>
               </div>
             </div>
           </div>

@@ -3,11 +3,13 @@ import webpush from 'web-push';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {
+  // CORS for all responses
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     return res.status(200).end();
   }
 
@@ -117,7 +119,7 @@ export default async function handler(req, res) {
       id: notificationId,
       title,
       message,
-      icon: icon || '/icon-192.png',
+      icon: icon || '/notifly/icon-192.png',
       url: url || '/',
       data: {
         url: url || '/',

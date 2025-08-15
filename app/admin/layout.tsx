@@ -111,34 +111,35 @@ export default async function AdminLayout({
             <div className="flex items-center space-x-4">
               <ThemeToggle />
               
-              {/* Simple User Info Display */}
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user.email || 'Admin'}
+              {/* User Menu (avatar dropdown) */}
+              <div className="relative">
+                <details className="group">
+                  <summary className="list-none flex items-center gap-3 cursor-pointer select-none">
+                    <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-sm ring-1 ring-blue-500/20">
+                      <span className="text-white text-sm font-medium">
+                        {(user.email?.[0] || 'A').toUpperCase()}
+                      </span>
+                    </div>
+                  </summary>
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl p-3 z-50">
+                    <div className="px-2 pb-2 border-b border-gray-200 dark:border-gray-800 mb-2">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {user.email || 'Admin'}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">ID:</span>
+                        <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono border">
+                          {String(user.id).slice(-8)}
+                        </code>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <Link href="/dashboard" className="px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">Perfil</Link>
+                      <Link href="/admin/settings" className="px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">Configuración</Link>
+                      <Link href="/sign-out" className="px-3 py-2 text-sm rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400">Cerrar sesión</Link>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ID:
-                    </span>
-                    <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono border">
-                      {String(user.id).slice(-8)}
-                    </code>
-                  </div>
-                </div>
-                
-                <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-white text-sm font-medium">
-                    {(user.email?.[0] || 'A').toUpperCase()}
-                  </span>
-                </div>
-                
-                <Link 
-                  href="/sign-out" 
-                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors ml-2"
-                >
-                  Cerrar sesión
-                </Link>
+                </details>
               </div>
             </div>
           </div>
