@@ -38,5 +38,6 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  // Excluir /api y /trpc para no interferir con CORS/OPTIONS en endpoints de API
+  matcher: ['/((?!.*\\..*|_next).*)', '/'],
 }

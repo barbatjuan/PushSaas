@@ -49,10 +49,16 @@ export default async function handler(req, res) {
   }
 
   const userUUID = await resolveUserUUID();
+  console.log('🔍 Debug - userId recibido:', userId);
+  console.log('🔍 Debug - userUUID procesado:', userUUID);
+  console.log('🔍 Debug - Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  
   if (!userUUID) {
     return res.status(404).json({ 
       error: 'Usuario no encontrado para el identificador proporcionado', 
       received: String(userId),
+      processed: userUUID,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
       note: 'Se normaliza user_id (decodeURIComponent + trim + sin comillas).'
     });
   }
