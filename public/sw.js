@@ -91,9 +91,11 @@ self.addEventListener('push', (event) => {
 
   const title = notificationData.title || 'NotiFly';
   const options = {
-    body: notificationData.body || 'Nueva notificación disponible',
-    icon: notificationData.icon || '/icon-192.png',
-    badge: notificationData.badge || '/icon-192.png',
+    // El backend envía 'message'; mapear a body para Web Notifications
+    body: notificationData.body || notificationData.message || 'Nueva notificación disponible',
+    // Usar rutas compatibles con el plugin WP
+    icon: notificationData.icon || '/notifly/icon-192.png',
+    badge: notificationData.badge || '/notifly/icon-192.png',
     image: notificationData.image,
     data: {
       url: notificationData.url || '/',
@@ -104,7 +106,7 @@ self.addEventListener('push', (event) => {
       {
         action: 'open',
         title: 'Abrir',
-        icon: '/icon-192.png'
+        icon: '/notifly/icon-192.png'
       },
       {
         action: 'close',
