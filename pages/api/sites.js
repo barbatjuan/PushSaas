@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   // Resolver el UUID interno del usuario a partir de userId
   async function resolveUserUUID() {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const raw = userId;
+    const raw = Array.isArray(userId) ? userId[0] : userId;
 
     // Si parece un UUID, úsalo directamente
     if (raw && uuidRegex.test(raw)) {
@@ -32,7 +32,11 @@ export default async function handler(req, res) {
 
   const userUUID = await resolveUserUUID();
   if (!userUUID) {
-    return res.status(404).json({ error: 'Usuario no encontrado para el identificador proporcionado', received: String(userId) });
+    return res.status(404).json({ 
+      error: 'Usuario no encontrado para el identificador proporcionado', 
+      received: String(userId),
+      note: 'Si envías user_id repetido produce array; ahora tomamos el primero.'
+    });
   }
 
   if (req.method === 'GET') {
