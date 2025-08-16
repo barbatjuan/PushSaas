@@ -123,7 +123,8 @@ self.addEventListener('push', (event) => {
         title: 'Cerrar'
       }
     ],
-    tag: notificationData.tag || 'pushsaas-notification',
+    // Si no se especifica tag, usar uno único para evitar que se reemplacen
+    tag: notificationData.tag || `pushsaas-${Date.now()}-${Math.floor(Math.random()*1e6)}`,
     renotify: true,
     requireInteraction: false,
     silent: false,
