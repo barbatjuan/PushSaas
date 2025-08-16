@@ -14,6 +14,59 @@
     siteId = window.NOTIFLY_SITE_ID;
     console.log('🔧 NotiFly: Using Site ID from global variable');
   }
+
+  // Desktop PWA Installation Prompt (Chrome/Edge)
+  function createDesktopInstallPrompt() {
+    // Avoid duplicates
+    if (document.getElementById('pushsaas-desktop-install')) return false;
+
+    const html = `
+      <div id="pushsaas-desktop-install" style="
+        position: fixed; right: 16px; bottom: 16px; z-index: 999999;
+        background: #0b1220; color: #e6e8eb; border: 1px solid rgba(230,232,235,0.12);
+        border-radius: 12px; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      ">
+        <img src="/icon-192.png" alt="App" width="24" height="24" style="border-radius:6px" />
+        <div style="font-size:13px; line-height:1.2;">Instala esta app para acceso rápido</div>
+        <div style="display:flex; gap:8px; margin-left:6px;">
+          <button id="pushsaas-install-now" style="appearance:none; border:0; background:#16a34a; color:#fff; padding:6px 10px; border-radius:8px; font-weight:700; font-size:12px;">Instalar</button>
+          <button id="pushsaas-install-close" style="appearance:none; border:0; background:transparent; color:#9aa4af; padding:6px; border-radius:8px;">✕</button>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const root = document.getElementById('pushsaas-desktop-install');
+    const installBtn = document.getElementById('pushsaas-install-now');
+    const closeBtn = document.getElementById('pushsaas-install-close');
+
+    installBtn.addEventListener('click', async () => {
+      try {
+        if (deferredInstallPrompt) {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          console.log('🖥️ PushSaaS: Desktop install choice:', choice);
+          deferredInstallPrompt = null;
+        } else if (window.notiflyDeferredPrompt) {
+          window.notiflyDeferredPrompt.prompt();
+          const choice = await window.notiflyDeferredPrompt.userChoice;
+          console.log('🖥️ PushSaaS: Desktop install choice (plugin):', choice);
+          window.notiflyDeferredPrompt = null;
+        } else {
+          alert('Para instalar, usa el icono de instalación del navegador (barra de direcciones).');
+        }
+      } catch (e) {
+        console.warn('⚠️ PushSaaS: Error showing desktop install prompt:', e);
+      } finally {
+        root.remove();
+      }
+    });
+
+    closeBtn.addEventListener('click', () => root.remove());
+
+    console.log('🖥️ PushSaaS: Desktop install prompt shown');
+    return true;
+  }
   
   const apiBase = (scriptTag ? scriptTag.getAttribute('data-api') : null) || 
                   window.NOTIFLY_API_BASE || 
@@ -62,6 +115,8 @@
   let vapidPublicKey = null;
   let serviceWorkerRegistration = null;
   let pushSubscription = null;
+  // PWA install prompt (desktop/Android)
+  let deferredInstallPrompt = null;
 
   // Visual debug function for iPhone (no console access)
   function showDebugAlert(message, duration = 3000) {
@@ -425,12 +480,25 @@
       // Check if Notification API is available
       const hasNotificationAPI = 'Notification' in window && typeof Notification.requestPermission === 'function';
       
-      // Check for Android PWA installation prompt
-      if (shouldShowAndroidPWAPrompt()) {
-        console.log('🤖 PushSaaS: Showing Android PWA installation prompt');
-        createAndroidPWAPrompt();
-        // Continue with notification setup even if PWA prompt is shown
-      }
+      // Register global beforeinstallprompt handler to enable custom install UI
+      window.addEventListener('beforeinstallprompt', (e) => {
+        try {
+          e.preventDefault();
+          deferredInstallPrompt = e;
+          const inStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+          if (!inStandalone) {
+            if (shouldShowAndroidPWAPrompt()) {
+              console.log('🤖 PushSaaS: Showing Android PWA installation prompt');
+              createAndroidPWAPrompt();
+            } else if (isDesktop) {
+              createDesktopInstallPrompt();
+            }
+          }
+          console.log('[PWA] beforeinstallprompt captured');
+        } catch (err) {
+          console.warn('[PWA] beforeinstallprompt handler error:', err);
+        }
+      }, { once: true });
       
       // Check if browser supports push notifications
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) {

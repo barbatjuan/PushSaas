@@ -3,7 +3,7 @@
 Plugin Name: NotiFly Push Notifications
 Plugin URI: https://notifly.com
 Description: Integra NotiFly en WordPress con mínimo esfuerzo. Solo introduce tu Site ID y listo.
-Version: 2.2.0
+Version: 2.2.1
 Author: NotiFly Team
 Author URI: https://notifly.com
 License: GPL v2 or later
