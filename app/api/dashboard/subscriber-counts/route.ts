@@ -12,11 +12,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's sites
+    // Map Supabase Auth user -> DB user to get internal users.id
+    const { data: dbUser, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('supabase_user_id', user.id)
+      .single()
+
+    if (userError || !dbUser) {
+      console.error('❌ Error fetching DB user by supabase_user_id:', userError)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Get user's sites using internal DB user id
     const { data: sites, error: sitesError } = await supabaseAdmin
       .from('sites')
       .select('id, name, status')
-      .eq('user_id', user.id)
+      .eq('user_id', dbUser.id)
 
     if (sitesError) {
       console.error('❌ Error fetching user sites:', sitesError)
