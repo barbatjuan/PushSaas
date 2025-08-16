@@ -115,62 +115,51 @@
     const promptHTML = `
       <div id="pushsaas-android-pwa-prompt" style="
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        color: white;
-        padding: 20px;
-        text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+        inset: auto 16px calc(16px + env(safe-area-inset-bottom)) 16px;
         z-index: 999999;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
       ">
-        <div style="max-width: 500px; margin: 0 auto;">
-          <div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">
-            🚀 ¡Instala WebCoders como App!
+        <div role="dialog" aria-live="polite" aria-label="Instalar aplicación" style="
+          width: min(520px, 100%);
+          background: #0b1220;
+          color: #e6e8eb;
+          border: 1px solid rgba(230,232,235,0.12);
+          border-radius: 14px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.25);
+          padding: 14px 16px;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          gap: 12px;
+          align-items: center;
+          transform: translateY(16px);
+          opacity: 0;
+          transition: transform .25s ease, opacity .25s ease;
+          pointer-events: auto;
+        ">
+          <img src="/notifly/icon-192.png" alt="App icon" width="36" height="36" style="border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.25);" />
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="font-size: 15px; font-weight: 700; letter-spacing: .2px;">Instala esta app</div>
+            <div style="font-size: 13px; color: #9aa4af;">Acceso rápido y notificaciones push nativas</div>
           </div>
-          <div style="font-size: 16px; margin-bottom: 15px; opacity: 0.95;">
-            Acceso rápido, notificaciones push y experiencia nativa en tu Android
-          </div>
-          <div style="font-size: 14px; margin-bottom: 20px; background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px;">
-            📱 Toca <strong>"Añadir a pantalla de inicio"</strong> en el menú de Chrome
-          </div>
-          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button id="pushsaas-android-close" aria-label="Cerrar" style="
+            appearance: none; background: transparent; border: 0; color: #9aa4af;
+            width: 32px; height: 32px; border-radius: 8px; display:grid; place-items:center;
+          ">✕</button>
+          <div style="grid-column: 1 / -1; display:flex; gap:10px; justify-content:flex-end; margin-top: 4px;">
             <button id="pushsaas-android-install" style="
-              background: rgba(255,255,255,0.9);
-              border: none;
-              color: #4CAF50;
-              padding: 12px 24px;
-              border-radius: 25px;
-              font-size: 16px;
-              font-weight: bold;
-              cursor: pointer;
-              transition: all 0.2s;
-              box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            ">📥 Instalar App</button>
+              appearance: none; border: 0; background: #16a34a; color: white;
+              padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 14px;
+              box-shadow: 0 8px 20px rgba(22,163,74,0.35);
+            ">Instalar</button>
             <button id="pushsaas-android-later" style="
-              background: transparent;
-              border: 2px solid rgba(255,255,255,0.5);
-              color: white;
-              padding: 10px 20px;
-              border-radius: 25px;
-              font-size: 14px;
-              cursor: pointer;
-              transition: all 0.2s;
-            ">🕒 Más tarde</button>
+              appearance: none; background: transparent; border: 1px solid rgba(230,232,235,0.18);
+              color: #c4c9cf; padding: 9px 12px; border-radius: 10px; font-weight: 600; font-size: 13px;
+            ">Más tarde</button>
             <button id="pushsaas-android-dismiss" style="
-              background: transparent;
-              border: 1px solid rgba(255,255,255,0.3);
-              color: rgba(255,255,255,0.8);
-              padding: 10px 20px;
-              border-radius: 25px;
-              font-size: 14px;
-              cursor: pointer;
-              transition: all 0.2s;
-            ">❌ No mostrar</button>
+              appearance: none; background: transparent; border: 0; color: #7a838d; font-size: 12px;
+            ">No mostrar</button>
           </div>
         </div>
       </div>
@@ -179,14 +168,17 @@
     document.body.insertAdjacentHTML('beforeend', promptHTML);
     
     const prompt = document.getElementById('pushsaas-android-pwa-prompt');
+    const dialog = prompt.firstElementChild;
     const installBtn = document.getElementById('pushsaas-android-install');
     const laterBtn = document.getElementById('pushsaas-android-later');
     const dismissBtn = document.getElementById('pushsaas-android-dismiss');
+    const closeBtn = document.getElementById('pushsaas-android-close');
     
     // Show prompt with animation
-    setTimeout(() => {
-      prompt.style.transform = 'translateY(0)';
-    }, 100);
+    requestAnimationFrame(() => {
+      dialog.style.transform = 'translateY(0)';
+      dialog.style.opacity = '1';
+    });
     
     // Store the beforeinstallprompt event
     let deferredPrompt = null;
@@ -198,63 +190,54 @@
       deferredPrompt = e;
       
       // Update install button to show it's ready
-      installBtn.innerHTML = '🚀 Instalar Ahora';
-      installBtn.style.background = 'rgba(255,255,255,1)';
-    });
+      installBtn.textContent = 'Instalar ahora';
+      installBtn.style.background = '#22c55e';
+    }, { once: true });
+    
+    function hidePrompt(persist = false) {
+      dialog.style.transform = 'translateY(16px)';
+      dialog.style.opacity = '0';
+      setTimeout(() => {
+        prompt.remove();
+      }, 250);
+      if (persist) {
+        localStorage.setItem('pushsaas-android-pwa-dismissed', 'true');
+      }
+    }
     
     // Event handlers
     installBtn.addEventListener('click', async () => {
       if (deferredPrompt) {
         console.log('🤖 PushSaaS: Showing install prompt');
         deferredPrompt.prompt();
-        
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`🤖 PushSaaS: User choice: ${outcome}`);
-        
-        if (outcome === 'accepted') {
-          console.log('🎉 PushSaaS: PWA installed successfully!');
-        }
-        
         deferredPrompt = null;
       } else {
-        // Fallback: show manual instructions
-        alert('📱 Para instalar:\n\n1. Toca el menú de Chrome (⋮)\n2. Selecciona "Añadir a pantalla de inicio"\n3. Confirma la instalación\n\n¡Después podrás recibir notificaciones!');
+        alert('📱 Para instalar:\n\n1. Toca el menú de Chrome (⋮)\n2. Selecciona "Añadir a pantalla de inicio"\n3. Confirma la instalación');
       }
-      
-      // Hide prompt
-      prompt.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        prompt.remove();
-      }, 300);
+      hidePrompt(false);
     });
     
     laterBtn.addEventListener('click', () => {
       console.log('🤖 PushSaaS: User chose "later" for PWA install');
-      prompt.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        prompt.remove();
-      }, 300);
+      hidePrompt(false);
     });
     
     dismissBtn.addEventListener('click', () => {
       console.log('🤖 PushSaaS: User dismissed Android PWA prompt permanently');
-      localStorage.setItem('pushsaas-android-pwa-dismissed', 'true');
-      prompt.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        prompt.remove();
-      }, 300);
+      hidePrompt(true);
     });
     
-    // Auto-hide after 20 seconds
+    closeBtn.addEventListener('click', () => hidePrompt(false));
+    
+    // Auto-hide after 15 seconds
     setTimeout(() => {
       if (document.getElementById('pushsaas-android-pwa-prompt')) {
-        console.log('🤖 PushSaaS: Android PWA prompt auto-hidden after 20s');
-        prompt.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-          prompt.remove();
-        }, 300);
+        console.log('🤖 PushSaaS: Android PWA prompt auto-hidden after 15s');
+        hidePrompt(false);
       }
-    }, 20000);
+    }, 15000);
     
     console.log('🤖 PushSaaS: Android PWA installation prompt shown');
     return true;
