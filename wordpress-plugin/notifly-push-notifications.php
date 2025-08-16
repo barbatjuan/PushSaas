@@ -585,11 +585,10 @@ window.NOTIFLY_API_BASE = 'https://www.adioswifi.es';
              "  const ourManifestHref = '{$manifest_url}';\n".
              "  const links = Array.from(document.querySelectorAll(\"link[rel='manifest']\"));\n".
              "  console.log('[NotiFly][PWA] Manifest links encontrados:', links.map(l=>l.href));\n".
-             "  // Mantener el nuestro y eliminar otros para evitar que el theme sobreescriba\n".
-             "  links.forEach(l=>{ if(l.href !== ourManifestHref) { l.parentNode && l.parentNode.removeChild(l); } });\n".
-             "  let manifestEl = document.querySelector(\"link[rel='manifest']\");\n".
-             "  if (!manifestEl) { manifestEl = document.createElement('link'); manifestEl.rel='manifest'; manifestEl.href=ourManifestHref; document.head.appendChild(manifestEl); }\n".
-             "  console.log('[NotiFly][PWA] Manifest activo:', manifestEl.href);\n".
+             "  // No eliminar manifests existentes; solo asegurar que el nuestro esté presente\n".
+             "  let manifestEl = links.find(l=>l.href === ourManifestHref);\n".
+             "  if (!manifestEl) { manifestEl = document.createElement('link'); manifestEl.rel='manifest'; manifestEl.href=ourManifestHref; document.head.prepend(manifestEl); }\n".
+             "  console.log('[NotiFly][PWA] Manifest asegurado:', manifestEl.href);\n".
              "  // Fetch del manifest\n".
              "  fetch(manifestEl.href, { cache: 'reload' }).then(async r=>{\n".
              "    console.log('[NotiFly][PWA] Manifest status:', r.status, 'content-type:', r.headers.get('content-type'));\n".
