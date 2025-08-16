@@ -138,7 +138,7 @@
           transition: transform .25s ease, opacity .25s ease;
           pointer-events: auto;
         ">
-          <img src="/notifly/icon-192.png" alt="App icon" width="36" height="36" style="border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.25);" />
+          <img src="/icon-192.png" alt="App icon" width="36" height="36" style="border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.25);" />
           <div style="display:flex; flex-direction:column; gap:4px;">
             <div style="font-size: 15px; font-weight: 700; letter-spacing: .2px;">Instala esta app</div>
             <div style="font-size: 13px; color: #9aa4af;">Acceso rápido y notificaciones push nativas</div>
