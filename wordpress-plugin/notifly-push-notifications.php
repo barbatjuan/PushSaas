@@ -591,21 +591,39 @@ window.NOTIFLY_API_BASE = 'https://www.adioswifi.es';
              "  let manifestEl = document.querySelector(\"link[rel='manifest']\");\n".
              "  if (!manifestEl) { manifestEl = document.createElement('link'); manifestEl.rel='manifest'; manifestEl.href=ourManifestHref; document.head.appendChild(manifestEl); }\n".
              "  console.log('[NotiFly][PWA] Manifest activo:', manifestEl.href);\n".
-             "  // Fetch del manifest\n".
-             "  fetch(manifestEl.href, { cache: 'reload' }).then(async r=>{\n".
-             "    console.log('[NotiFly][PWA] Manifest status:', r.status, 'content-type:', r.headers.get('content-type'));\n".
-             "    const txt = await r.text();\n".
-             "    let json = null;\n".
-             "    try { json = JSON.parse(txt); } catch(e){ console.warn('[NotiFly][PWA] Manifest no es JSON válido:', e); }\n".
-             "    if (json && Array.isArray(json.icons)) {\n".
-             "      console.log('[NotiFly][PWA] Icons en manifest:', json.icons);\n".
-             "      const has192 = json.icons.some(i=>String(i.sizes).includes('192'));\n".
-             "      const has512 = json.icons.some(i=>String(i.sizes).includes('512'));\n".
-             "      console.log('[NotiFly][PWA] Icons 192/512 presentes:', has192, has512);\n".
-             "    } else {\n".
-             "      console.warn('[NotiFly][PWA] Manifest sin icons o estructura inesperada');\n".
-             "    }\n".
-             "  }).catch(err=>{ console.error('[NotiFly][PWA] Error al obtener manifest:', err); });\n".
+             "  // Fetch del manifest con fallback automático si falla la ruta limpia\n".
+            "  async function ensureManifestReachable(){\n".
+            "    try {\n".
+            "      const r = await fetch(manifestEl.href, { cache: 'reload' });\n".
+            "      console.log('[NotiFly][PWA] Manifest status:', r.status, 'content-type:', r.headers.get('content-type'));\n".
+            "      if (!r.ok) {\n".
+            "        const fallback = new URL('/?notifly_manifest=1', window.location.origin).href;\n".
+            "        console.warn('[NotiFly][PWA] Manifest limpio no disponible (' + r.status + '). Cambiando a fallback:', fallback);\n".
+            "        manifestEl.href = fallback;\n".
+            "        // Reintentar con fallback\n".
+            "        const rf = await fetch(fallback, { cache: 'reload' });\n".
+            "        console.log('[NotiFly][PWA] Fallback manifest status:', rf.status, 'ok:', rf.ok);\n".
+            "      } else {\n".
+            "        const txt = await r.text();\n".
+            "        let json = null;\n".
+            "        try { json = JSON.parse(txt); } catch(e){ console.warn('[NotiFly][PWA] Manifest no es JSON válido:', e); }\n".
+            "        if (json && Array.isArray(json.icons)) {\n".
+            "          console.log('[NotiFly][PWA] Icons en manifest:', json.icons);\n".
+            "          const has192 = json.icons.some(i=>String(i.sizes).includes('192'));\n".
+            "          const has512 = json.icons.some(i=>String(i.sizes).includes('512'));\n".
+            "          console.log('[NotiFly][PWA] Icons 192/512 presentes:', has192, has512);\n".
+            "        } else {\n".
+            "          console.warn('[NotiFly][PWA] Manifest sin icons o estructura inesperada');\n".
+            "        }\n".
+            "      }\n".
+            "    } catch(err) {\n".
+            "      console.error('[NotiFly][PWA] Error al obtener manifest:', err);\n".
+            "      const fallback = new URL('/?notifly_manifest=1', window.location.origin).href;\n".
+            "      console.warn('[NotiFly][PWA] Usando fallback por excepción:', fallback);\n".
+            "      manifestEl.href = fallback;\n".
+            "    }\n".
+            "  }\n".
+            "  ensureManifestReachable();\n".
              "  // Probar endpoints de iconos 192/512\n".
              "  function testIcon(size){\n".
              "    const iconUrl = new URL('/notifly/icon-' + size + '.png', window.location.origin).href;\n".
