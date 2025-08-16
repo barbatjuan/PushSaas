@@ -45,20 +45,20 @@ export async function POST(request: NextRequest) {
 
     // OneSignal is no longer required; using native web-push
 
-    // Check if site has subscribers
+    // Check if site has active push subscriptions (migrated)
     const { count: subscriberCount, error: countError } = await supabaseAdmin
-      .from('subscribers')
+      .from('push_subscriptions')
       .select('*', { count: 'exact', head: true })
-      .eq('site_id', site.site_id)
+      .eq('site_id', site.id)
       .eq('is_active', true)
 
     if (countError) {
-      console.error('Error counting subscribers:', countError)
-      return NextResponse.json({ error: 'Error checking subscribers' }, { status: 500 })
+      console.error('Error counting push_subscriptions:', countError)
+      return NextResponse.json({ error: 'Error checking push subscriptions' }, { status: 500 })
     }
 
     if (!subscriberCount || subscriberCount === 0) {
-      return NextResponse.json({ error: 'No active subscribers found for this site' }, { status: 400 })
+      return NextResponse.json({ error: 'No active push subscriptions found for this site' }, { status: 400 })
     }
 
     // Create notification record

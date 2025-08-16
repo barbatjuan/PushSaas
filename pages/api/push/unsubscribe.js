@@ -34,31 +34,7 @@ export default async function handler(req, res) {
       console.error('Error al desactivar suscripción:', updateError);
     }
 
-    // Desactivar en subscribers (para compatibilidad)
-    await supabaseAdmin
-      .from('subscribers')
-      .update({ is_active: false })
-      .eq('site_id', siteId)
-      .eq('token', endpoint);
-
-    // Decrementar contador solo si se actualizó algún registro
-    if (updateData && updateData.length > 0) {
-      const { data: site } = await supabaseAdmin
-        .from('sites')
-        .select('subscriber_count')
-        .eq('id', siteData.id)
-        .single();
-
-      if (site && site.subscriber_count > 0) {
-        await supabaseAdmin
-          .from('sites')
-          .update({
-            subscriber_count: site.subscriber_count - 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', siteData.id);
-      }
-    }
+    // Nota: Se elimina compatibilidad legacy con 'subscribers' y decremento de 'sites.subscriber_count'
 
     return res.status(200).json({
       success: true,

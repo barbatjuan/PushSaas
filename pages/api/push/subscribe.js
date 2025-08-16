@@ -37,8 +37,17 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Site not found or inactive' });
     }
 
-    // Verificar límite de suscriptores para plan gratuito
-    if (siteData.subscriber_count >= 20) {
+    // Verificar límite de suscriptores para plan gratuito usando conteo real desde push_subscriptions
+    const { data: activeCountResp, error: countErr } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('*', { count: 'exact', head: true })
+      .eq('site_id', siteData.id)
+      .eq('is_active', true);
+    const activeCount = activeCountResp?.length ? activeCountResp.length : (activeCountResp === null ? 0 : 0);
+    if (countErr) {
+      console.warn('No se pudo obtener el conteo real de suscriptores. Continuando sin límite.', countErr);
+    }
+    if (!countErr && activeCount >= 20) {
       return res.status(403).json({ 
         error: 'Subscriber limit reached (20). Please upgrade to premium.' 
       });
@@ -95,27 +104,7 @@ export default async function handler(req, res) {
       throw subError;
     }
 
-    // Incrementar contador de suscriptores
-    await supabaseAdmin
-      .from('sites')
-      .update({ 
-        subscriber_count: siteData.subscriber_count + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', siteData.id);
-
-    // También guardar en tabla de subscribers para compatibilidad
-    await supabaseAdmin
-      .from('subscribers')
-      .insert({
-        id: uuidv4(),
-        site_id: siteData.id,
-        token: subscription.endpoint,
-        user_agent: userAgent || req.headers['user-agent'],
-        subscribed_at: new Date().toISOString(),
-        last_seen: new Date().toISOString(),
-        is_active: true
-      });
+    // Nota: Se elimina actualización de sites.subscriber_count y escritura en tabla legacy 'subscribers'
 
     return res.status(201).json({ 
       success: true, 

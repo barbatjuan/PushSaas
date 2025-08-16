@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@/lib/server-auth';
 import { createClient } from '@supabase/supabase-js';
-import { getWebPush } from '@/lib/webpush';
+import webpush from 'web-push';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -60,19 +60,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user owns the site
-    const { data: site, error: siteError } = await supabase
+    // Resolve site by site_id (text) or id (UUID) and ensure ownership
+    let { data: site, error: siteError } = await supabase
       .from('sites')
-      .select('id, name, domain')
-      .eq('id', siteId)
+      .select('id, name, domain, user_id, site_id, status')
+      .eq('site_id', siteId)
       .eq('user_id', dbUser.id)
+      .eq('status', 'active')
       .single();
-
     if (siteError || !site) {
-      return NextResponse.json(
-        { error: 'Site not found or access denied' },
-        { status: 404 }
+      const byUuid = await supabase
+        .from('sites')
+        .select('id, name, domain, user_id, site_id, status')
+        .eq('id', siteId)
+        .eq('user_id', dbUser.id)
+        .eq('status', 'active')
+        .single();
+      site = byUuid.data as any;
+      siteError = byUuid.error as any;
+    }
+    if (siteError || !site) {
+      return NextResponse.json({ error: 'Site not found or access denied' }, { status: 404 });
+    }
+
+    // Configure webpush with per-site VAPID keys from Supabase (multi-tenant safe)
+    const { data: vapidRow, error: vapidError } = await supabase
+      .from('vapid_keys')
+      .select('public_key, private_key')
+      .eq('site_id', site.id)
+      .single();
+    if (vapidError || !vapidRow?.public_key || !vapidRow?.private_key) {
+      return NextResponse.json({ error: 'VAPID keys not found for site' }, { status: 500 });
+    }
+    try {
+      webpush.setVapidDetails(
+        process.env.VAPID_SUBJECT || `mailto:contact@${process.env.NEXT_PUBLIC_APP_URL || 'example.com'}`,
+        vapidRow.public_key,
+        vapidRow.private_key
       );
+    } catch (e: any) {
+      console.error('❌ Failed to configure webpush:', e);
+      return NextResponse.json({ error: 'Failed to configure webpush' }, { status: 500 });
     }
 
     // Get active subscriptions for the site
@@ -110,9 +138,9 @@ export async function POST(request: NextRequest) {
     const notificationPayload: NotificationPayload = {
       title: notification.title,
       body: notification.body,
-      icon: notification.icon || '/icon-192x192.png',
-      badge: notification.badge || '/badge-72x72.png',
-      url: notification.url || site.domain || `https://${site.domain}`,
+      icon: notification.icon || '/notifly/icon-192.png',
+      badge: notification.badge || '/notifly/icon-192.png',
+      url: notification.url || (site.domain?.startsWith('http') ? site.domain : `https://${site.domain || ''}`) || '/',
       actions: notification.actions || [
         {
           action: 'open',
@@ -137,7 +165,6 @@ export async function POST(request: NextRequest) {
     const results = await Promise.allSettled(
       subscriptions.map(async (subscription) => {
         try {
-          const webpush = getWebPush();
           await webpush.sendNotification(
             subscription.subscription_data,
             JSON.stringify(notificationPayload)
@@ -146,8 +173,8 @@ export async function POST(request: NextRequest) {
         } catch (error: any) {
           console.error(`❌ Failed to send to subscription ${subscription.id}:`, error);
           
-          // Handle expired subscriptions
-          if (error.statusCode === 410 || error.statusCode === 404) {
+          // Handle invalid/expired subscriptions (broadened)
+          if (error.statusCode === 410 || error.statusCode === 404 || error.statusCode === 403 || error.statusCode === 401 || error.statusCode === 502) {
             // Deactivate expired subscription
             await supabase
               .from('push_subscriptions')

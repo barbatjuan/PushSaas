@@ -66,25 +66,25 @@ export async function GET(request: NextRequest) {
       avgPerUser: userStats.total > 0 ? allSites.length / userStats.total : 0
     }
 
-    // 3. SUBSCRIBER STATISTICS
-    const { data: allSubscribers, error: subscribersError } = await supabaseAdmin
-      .from('subscribers')
-      .select('id, site_id, subscribed_at, last_seen, is_active')
+    // 3. SUBSCRIBER STATISTICS (migrated to push_subscriptions)
+    const { data: allPushSubs, error: pushSubsError } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('id, site_id, created_at, last_seen, is_active')
 
-    if (subscribersError) throw subscribersError
+    if (pushSubsError) throw pushSubsError
 
-    const activeSubscribers = allSubscribers.filter(s => s.is_active)
-    const subscribersActiveToday = activeSubscribers.filter(s => 
-      s.last_seen && new Date(s.last_seen) >= startOfToday
+    const activePushSubs = (allPushSubs || []).filter(s => s.is_active)
+    const subscribersActiveToday = activePushSubs.filter(s => 
+      s.last_seen && new Date(s.last_seen as any) >= startOfToday
     ).length
 
-    // Calculate growth (comparing this month vs last month)
+    // Calculate growth (this month vs last month) based on created_at
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const subscribersThisMonth = activeSubscribers.filter(s => 
-      new Date(s.subscribed_at) >= startOfMonth
+    const subscribersThisMonth = activePushSubs.filter(s => 
+      new Date(s.created_at as any) >= startOfMonth
     ).length
-    const subscribersLastMonth = activeSubscribers.filter(s => {
-      const subDate = new Date(s.subscribed_at)
+    const subscribersLastMonth = activePushSubs.filter(s => {
+      const subDate = new Date(s.created_at as any)
       return subDate >= lastMonth && subDate < startOfMonth
     }).length
 
@@ -92,18 +92,22 @@ export async function GET(request: NextRequest) {
       ? ((subscribersThisMonth - subscribersLastMonth) / subscribersLastMonth) * 100 
       : 0
 
-    // Top sites by subscriber count
+    // Top sites by active push subscriptions
+    const countsBySite: Record<string, number> = {}
+    for (const s of activePushSubs) {
+      countsBySite[s.site_id as unknown as string] = (countsBySite[s.site_id as unknown as string] || 0) + 1
+    }
     const sitesWithSubscribers = allSites
       .map(site => ({
         name: site.name,
         url: site.url,
-        count: site.subscriber_count || 0
+        count: countsBySite[site.id] || 0
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
 
     const subscriberStats = {
-      total: activeSubscribers.length,
+      total: activePushSubs.length,
       activeToday: subscribersActiveToday,
       growth: Math.round(growth * 10) / 10, // Round to 1 decimal
       topSites: sitesWithSubscribers
@@ -203,11 +207,12 @@ export async function POST(request: NextRequest) {
     // Handle specific metric requests
     switch (metric) {
       case 'live_subscribers':
+        // Migrado a push_subscriptions: usuarios activos vistos en los últimos 5 minutos
         const { count: liveCount } = await supabaseAdmin
-          .from('subscribers')
+          .from('push_subscriptions')
           .select('*', { count: 'exact', head: true })
           .eq('is_active', true)
-          .gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Last 5 minutes
+          .gte('last_seen', new Date(Date.now() - 5 * 60 * 1000).toISOString())
 
         return NextResponse.json({ count: liveCount || 0 })
 

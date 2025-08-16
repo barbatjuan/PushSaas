@@ -49,19 +49,23 @@ export default function NewNotificationPage() {
 
         if (error) throw error
         setSites(data || [])
-        // Obtener conteos reales por sitio
-        if (data && data.length > 0) {
-          const counts: Record<string, number> = {}
-          for (const site of data) {
-            const { count } = await supabase
-              .from('push_subscriptions')
-              .select('*', { count: 'exact', head: true })
-              .eq('site_id', site.id)
-              .eq('is_active', true)
-            counts[site.id] = count || 0
+        // Obtener conteos reales por sitio desde el backend (evita RLS)
+        try {
+          const res = await fetch('/api/dashboard/subscriber-counts')
+          if (res.ok) {
+            const json = await res.json()
+            const counts: Record<string, number> = {}
+            if (json?.bySite) {
+              for (const [siteId, info] of Object.entries(json.bySite as Record<string, any>)) {
+                counts[siteId] = (info as any).count || 0
+              }
+            }
+            setActiveCounts(counts)
+          } else {
+            setActiveCounts({})
           }
-          setActiveCounts(counts)
-        } else {
+        } catch (e) {
+          console.error('Error fetching subscriber-counts:', e)
           setActiveCounts({})
         }
         

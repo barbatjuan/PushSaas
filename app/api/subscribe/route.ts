@@ -135,27 +135,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Also insert into subscribers table for compatibility with existing counter system
-      console.log('📊 Inserting into subscribers table for compatibility');
-      const { error: subscribersError } = await supabase
-        .from('subscribers')
-        .upsert({
-          site_id: siteId, // Use the original string siteId, not UUID
-          token: subscription.endpoint, // Use endpoint as token for uniqueness
-          user_agent: userAgent,
-          subscribed_at: new Date().toISOString(),
-          last_seen: new Date().toISOString(),
-          is_active: true
-        }, {
-          onConflict: 'site_id,token'
-        });
-
-      if (subscribersError) {
-        console.error('⚠️ Failed to insert into subscribers table:', subscribersError);
-        // Don't fail the request, the triggers will handle the count automatically
-      } else {
-        console.log('✅ Successfully inserted into subscribers table - triggers will update count');
-      }
+      // Legacy subscribers table removed: no longer inserting into 'subscribers'
+      console.log('ℹ️ Skipping legacy subscribers insert (migrated to push_subscriptions only).');
 
       return NextResponse.json({
         success: true,
@@ -188,11 +169,26 @@ export async function DELETE(request: NextRequest) {
     // Create subscription hash from endpoint
     const subscriptionHash = Buffer.from(endpoint).toString('base64').slice(0, 32);
 
+    // Resolve siteId (string code) to UUID
+    const { data: site, error: siteError } = await supabase
+      .from('sites')
+      .select('id, site_id')
+      .eq('site_id', siteId)
+      .single();
+
+    if (siteError || !site) {
+      console.error('❌ Site not found for unsubscribe:', siteError);
+      return NextResponse.json(
+        { error: 'Site not found' },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     // Deactivate subscription (soft delete)
     const { error } = await supabase
       .from('push_subscriptions')
       .update({ is_active: false })
-      .eq('site_id', siteId)
+      .eq('site_id', site.id)
       .eq('subscription_hash', subscriptionHash);
 
     if (error) {
