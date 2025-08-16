@@ -731,8 +731,8 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
         echo "
 // NotiFly Service Worker (local minimo) - Generado dinamicamente\n".
              "const SITE_ID = '" . addslashes($site_id) . "';\n".
-             "// Importa el SW centralizado desde CDN con el Site ID del cliente\n".
-             "importScripts('" . addslashes($this->cdn_base) . "/sw.js?site=' + SITE_ID);\n".
+             "// Importa el SW centralizado desde CDN con el Site ID del cliente (cache-busting)\n".
+             "importScripts('" . addslashes($this->cdn_base) . "/sw.js?site=' + SITE_ID + '&_cb=' + Date.now());\n".
              "console.log('[NotiFly][SW] Importando SW central para site:', SITE_ID);\n";
     }
 
@@ -743,7 +743,8 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
         if (empty($site_id)) return false;
         $content = "// NotiFly Service Worker (local mínimo) - Generado por plugin\n" .
                    "const SITE_ID = '" . esc_js($site_id) . "';\n" .
-                   "importScripts('" . esc_url($this->cdn_base) . "/sw.js?site=' + SITE_ID);\n" .
+                   "// Cache-busting para asegurar actualización del SW centralizado\n" .
+                   "importScripts('" . esc_url($this->cdn_base) . "/sw.js?site=' + SITE_ID + '&_cb=' + Date.now());\n" .
                    "console.log('✅ NotiFly SW local importando SW central para site:', SITE_ID);\n";
 
         return $this->put_file(ABSPATH . 'sw.js', $content);

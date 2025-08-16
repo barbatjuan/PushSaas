@@ -78,22 +78,34 @@ self.addEventListener('push', (event) => {
     if (event.data) {
       notificationData = event.data.json();
       console.log('[SW] Push data:', notificationData);
+      // Mapear campos alternativos comunes a nuestro schema
+      // 1) Permitir que 'message' funcione como 'body'
+      if (notificationData && !notificationData.body && typeof notificationData.message === 'string') {
+        notificationData.body = notificationData.message;
+      }
+      // 2) Asegurar rutas de iconos por defecto bajo /notifly/* si vienen vacías
+      if (!notificationData.icon) {
+        notificationData.icon = '/notifly/icon-192.png';
+      }
+      if (!notificationData.badge) {
+        notificationData.badge = '/notifly/icon-192.png';
+      }
     }
   } catch (e) {
     console.log('[SW] Error parsing push data:', e);
     notificationData = {
       title: 'Nueva notificación',
       body: 'Tienes una nueva notificación de NotiFly',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png'
+      icon: '/notifly/icon-192.png',
+      badge: '/notifly/icon-192.png'
     };
   }
 
   const title = notificationData.title || 'NotiFly';
   const options = {
     body: notificationData.body || 'Nueva notificación disponible',
-    icon: notificationData.icon || '/icon-192.png',
-    badge: notificationData.badge || '/icon-192.png',
+    icon: notificationData.icon || '/notifly/icon-192.png',
+    badge: notificationData.badge || '/notifly/icon-192.png',
     image: notificationData.image,
     data: {
       url: notificationData.url || '/',
@@ -104,7 +116,7 @@ self.addEventListener('push', (event) => {
       {
         action: 'open',
         title: 'Abrir',
-        icon: '/icon-192.png'
+        icon: '/notifly/icon-192.png'
       },
       {
         action: 'close',
