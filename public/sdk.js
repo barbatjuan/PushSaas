@@ -117,6 +117,8 @@
   let pushSubscription = null;
   // PWA install prompt (desktop/Android)
   let deferredInstallPrompt = null;
+  // Heartbeat control
+  let heartbeatStarted = false;
 
   // Visual debug function for iPhone (no console access)
   function showDebugAlert(message, duration = 3000) {
@@ -525,6 +527,9 @@
         }, 1000);
       }
       
+      // Start heartbeat
+      ensureHeartbeat();
+      
     } catch (error) {
       console.error('❌ PushSaaS SDK: Initialization failed:', error);
     }
@@ -567,6 +572,31 @@
     }
   }
 
+  // Send heartbeat to backend to update last_seen (optionally reactivate)
+  async function sendHeartbeat(reactivate = false) {
+    try {
+      if (!serviceWorkerRegistration) return;
+      const sub = pushSubscription || (await serviceWorkerRegistration.pushManager.getSubscription());
+      if (!sub) return;
+      const cacheBuster = Date.now();
+      const url = `${apiBase}/api/subscribe/heartbeat?v=${cacheBuster}`;
+      const payload = {
+        siteId: siteId,
+        endpoint: sub.endpoint,
+        reactivate: !!reactivate,
+        timestamp: new Date().toISOString()
+      };
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      console.log('💓 PushSaaS: Heartbeat sent', { reactivate });
+    } catch (e) {
+      console.warn('⚠️ PushSaaS: Heartbeat failed:', e);
+    }
+  }
+
   // Fetch VAPID public key from backend
   async function fetchVapidKey() {
     try {
@@ -581,7 +611,7 @@
       console.log('🔑 PushSaaS: Got VAPID key:', vapidPublicKey ? vapidPublicKey.substring(0, 20) + '...' : 'MISSING');
     } catch (error) {
       console.error('❌ PushSaaS: Failed to fetch VAPID key:', error);
-      throw error;
+      throw new Error('Invalid VAPID key format: ' + error.message);
     }
   }
 
@@ -678,6 +708,8 @@
         console.log('📱 PushSaaS: Existing subscription found');
         // Optionally sync with backend
         await syncSubscriptionWithBackend(pushSubscription);
+        // Send a non-reactivating heartbeat on load
+        sendHeartbeat(false);
       }
     } catch (error) {
       console.error('❌ PushSaaS: Failed to check existing subscription:', error);
@@ -790,6 +822,8 @@
 
       // Send subscription to backend
       await syncSubscriptionWithBackend(pushSubscription);
+      // Send heartbeat with reactivation intent
+      sendHeartbeat(true);
       
       return true;
       
@@ -957,6 +991,23 @@
   } else {
     init();
   }
+
+  // Ensure heartbeat listeners are attached once
+  function ensureHeartbeat() {
+    if (heartbeatStarted) return;
+    heartbeatStarted = true;
+    // Reactivate on focus/visible
+    window.addEventListener('focus', () => sendHeartbeat(true));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        sendHeartbeat(true);
+      }
+    });
+    // Periodic heartbeat every 5 minutes
+    setInterval(() => sendHeartbeat(false), 5 * 60 * 1000);
+  }
+  // Start heartbeat after a short delay to allow init
+  setTimeout(ensureHeartbeat, 1500);
 
   // Create beautiful Tailwind CSS notification popup
   function createNotificationPopup() {

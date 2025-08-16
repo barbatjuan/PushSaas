@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     let subscriptionsQuery = supabase
       .from('push_subscriptions')
       .select('id, subscription_data, subscription_hash')
-      .eq('site_id', siteId)
+      .eq('site_id', site.id)
       .eq('is_active', true);
 
     // If not targeting all, filter by specific subscriptions
@@ -171,21 +171,52 @@ export async function POST(request: NextRequest) {
           );
           return { success: true, subscriptionId: subscription.id };
         } catch (error: any) {
-          console.error(`❌ Failed to send to subscription ${subscription.id}:`, error);
-          
-          // Handle invalid/expired subscriptions (broadened)
-          if (error.statusCode === 410 || error.statusCode === 404 || error.statusCode === 403 || error.statusCode === 401 || error.statusCode === 502) {
-            // Deactivate expired subscription
-            await supabase
+          const statusCode = error?.statusCode;
+          console.error(
+            `❌ Failed to send to subscription ${subscription.id} (site ${site.id}) — status: ${statusCode}, hash: ${subscription.subscription_hash}:`,
+            error
+          );
+
+          // Only deactivate on permanently invalid/expired subscriptions
+          if (statusCode === 410 || statusCode === 404) {
+            console.warn(
+              `🧹 Deactivating subscription ${subscription.id} for site ${site.id} due to status ${statusCode}`
+            );
+            const { error: deactivateError } = await supabase
               .from('push_subscriptions')
               .update({ is_active: false })
               .eq('id', subscription.id);
+            if (deactivateError) {
+              console.error('❌ Failed to mark subscription inactive', {
+                site_id: site.id,
+                subscriptionId: subscription.id,
+                subscription_hash: subscription.subscription_hash,
+                statusCode,
+                error: deactivateError
+              });
+            } else {
+              console.log('✅ Marked subscription inactive', {
+                site_id: site.id,
+                subscriptionId: subscription.id,
+                subscription_hash: subscription.subscription_hash,
+                statusCode
+              });
+            }
+          } else if (statusCode === 401 || statusCode === 403) {
+            console.warn(
+              `⚠️ Auth/VAPID issue for subscription ${subscription.id} (site ${site.id}). Not deactivating.`
+            );
+          } else if (statusCode === 502) {
+            console.warn(
+              `⏳ Upstream 502 for subscription ${subscription.id} (site ${site.id}). Treat as transient; not deactivating.`
+            );
           }
-          
-          return { 
-            success: false, 
-            subscriptionId: subscription.id, 
-            error: error.message 
+
+          return {
+            success: false,
+            subscriptionId: subscription.id,
+            error: error.message,
+            statusCode
           };
         }
       })
