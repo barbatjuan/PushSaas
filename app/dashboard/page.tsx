@@ -30,22 +30,34 @@ export default function DashboardPage() {
 
     const fetchStats = async () => {
       try {
-        // Get sites count and total subscribers
+        // 1) Obtener sitios del usuario
         const { data: sites, error: sitesError } = await supabase
           .from('sites')
-          .select('id, subscriber_count')
+          .select('id')
           .eq('user_id', user.id)
 
         if (sitesError) throw sitesError
 
         const totalSites = sites?.length || 0
-        const totalSubscribers = sites?.reduce((sum, site) => sum + (site.subscriber_count || 0), 0) || 0
 
-        // Get notifications count
+        // 2) Contar suscriptores activos reales desde push_subscriptions
+        let totalSubscribers = 0
+        const siteIds = (sites || []).map(s => s.id)
+        if (siteIds.length > 0) {
+          const { count: activeSubsCount, error: psError } = await supabase
+            .from('push_subscriptions')
+            .select('*', { count: 'exact', head: true })
+            .in('site_id', siteIds)
+            .eq('is_active', true)
+          if (psError) throw psError
+          totalSubscribers = activeSubsCount || 0
+        }
+
+        // 3) Contar notificaciones
         const { count: notificationsCount, error: notificationsError } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
-          .in('site_id', sites?.map(site => site.id) || [])
+          .in('site_id', (sites || []).map(site => site.id))
 
         if (notificationsError) throw notificationsError
 

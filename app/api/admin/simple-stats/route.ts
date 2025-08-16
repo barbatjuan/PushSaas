@@ -60,14 +60,14 @@ export async function GET(request: NextRequest) {
       console.error('❌ Error counting sites:', sitesError)
     }
 
-    // 3. Count subscribers
+    // 3. Count subscribers (migrated to push_subscriptions)
     const { count: totalSubscribers, error: subscribersError } = await supabaseAdmin
-      .from('subscribers')
+      .from('push_subscriptions')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
 
     if (subscribersError) {
-      console.error('❌ Error counting subscribers:', subscribersError)
+      console.error('❌ Error counting push_subscriptions:', subscribersError)
     }
 
     // 4. Count notifications
@@ -91,14 +91,43 @@ export async function GET(request: NextRequest) {
     }
 
     // 6. Get recent sites (last 10)
-    const { data: recentSites, error: recentSitesError } = await supabaseAdmin
+    const { data: recentSitesRaw, error: recentSitesError } = await supabaseAdmin
       .from('sites')
-      .select('name, url, subscriber_count, created_at')
+      .select('id, name, url, created_at')
       .order('created_at', { ascending: false })
       .limit(10)
 
     if (recentSitesError) {
       console.error('❌ Error fetching recent sites:', recentSitesError)
+    }
+
+    // 6b. Compute active subscribers per recent site from push_subscriptions
+    let recentSites: Array<{ name: string; url: string; subscriber_count: number; created_at: string }> = []
+    if (recentSitesRaw && recentSitesRaw.length > 0) {
+      // Count per site sequentially (max 10)
+      for (const site of recentSitesRaw) {
+        let count = 0
+        try {
+          const { count: c, error } = await supabaseAdmin
+            .from('push_subscriptions')
+            .select('*', { count: 'exact', head: true })
+            .eq('site_id', site.id)
+            .eq('is_active', true)
+          if (error) {
+            console.error('❌ Error counting push_subscriptions for site', site.id, error)
+          } else {
+            count = c || 0
+          }
+        } catch (e) {
+          console.error('❌ Exception counting push_subscriptions for site', site.id, e)
+        }
+        recentSites.push({
+          name: site.name,
+          url: site.url,
+          subscriber_count: count,
+          created_at: site.created_at,
+        })
+      }
     }
 
     // Compile stats

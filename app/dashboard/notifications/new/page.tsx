@@ -24,6 +24,8 @@ export default function NewNotificationPage() {
 
   const [sites, setSites] = useState<Site[]>([])
   const [loadingSites, setLoadingSites] = useState(true)
+  // Mapa de conteos reales de suscriptores activos por sitio
+  const [activeCounts, setActiveCounts] = useState<Record<string, number>>({})
   const [formData, setFormData] = useState({
     site_id: preselectedSiteId || '',
     title: '',
@@ -47,6 +49,21 @@ export default function NewNotificationPage() {
 
         if (error) throw error
         setSites(data || [])
+        // Obtener conteos reales por sitio
+        if (data && data.length > 0) {
+          const counts: Record<string, number> = {}
+          for (const site of data) {
+            const { count } = await supabase
+              .from('push_subscriptions')
+              .select('*', { count: 'exact', head: true })
+              .eq('site_id', site.id)
+              .eq('is_active', true)
+            counts[site.id] = count || 0
+          }
+          setActiveCounts(counts)
+        } else {
+          setActiveCounts({})
+        }
         
         // If no preselected site and only one site, auto-select it
         if (!preselectedSiteId && data && data.length === 1) {
@@ -106,7 +123,8 @@ export default function NewNotificationPage() {
   }
 
   const selectedSite = sites.find(site => site.id === formData.site_id)
-  const canSend = selectedSite && selectedSite.subscriber_count > 0
+  const selectedCount = selectedSite ? (activeCounts[selectedSite.id] || 0) : 0
+  const canSend = selectedCount > 0
   const isFormValid = formData.site_id && formData.title.trim() && formData.message.trim()
 
   if (loading || loadingSites) {
@@ -188,14 +206,14 @@ export default function NewNotificationPage() {
                   <SelectContent>
                     {sites.map((site) => (
                       <SelectItem key={site.id} value={site.id}>
-                        {site.name} ({site.subscriber_count} suscriptores)
+                        {site.name} ({activeCounts[site.id] || 0} suscriptores)
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {selectedSite && (
                   <p className="text-sm text-gray-500">
-                    Se enviará a {selectedSite.subscriber_count} suscriptores de {selectedSite.name}
+                    Se enviará a {selectedCount} suscriptores de {selectedSite.name}
                   </p>
                 )}
               </div>

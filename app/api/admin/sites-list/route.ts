@@ -49,7 +49,6 @@ export async function GET(request: NextRequest) {
         url,
         site_id,
         status,
-        subscriber_count,
         created_at,
         user_id
       `)
@@ -61,6 +60,23 @@ export async function GET(request: NextRequest) {
         { error: 'Failed to fetch sites' }, 
         { status: 500 }
       )
+    }
+
+    // Count active subscribers per site from push_subscriptions
+    let subsCountBySite: Record<string, number> = {}
+    if (sites && sites.length > 0) {
+      for (const site of sites) {
+        try {
+          const { count, error } = await supabaseAdmin
+            .from('push_subscriptions')
+            .select('*', { count: 'exact', head: true })
+            .eq('site_id', site.id)
+            .eq('is_active', true)
+          if (!error) subsCountBySite[site.id] = count || 0
+        } catch (e) {
+          console.error('Error counting push_subscriptions for site', site.id, e)
+        }
+      }
     }
 
     // Get user emails separately to avoid JOIN issues
@@ -86,7 +102,7 @@ export async function GET(request: NextRequest) {
       url: site.url,
       site_id: site.site_id,
       status: site.status || 'active',
-      subscriber_count: site.subscriber_count || 0,
+      subscriber_count: subsCountBySite[site.id] || 0,
       created_at: site.created_at,
       user_email: usersMap[site.user_id] || 'N/A'
     })) || []
