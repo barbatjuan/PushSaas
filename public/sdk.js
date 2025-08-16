@@ -484,7 +484,7 @@
     try {
       // Add cache-busting parameter
       const cacheBuster = Date.now();
-      const url = `${apiBase}/api/push/subscribe?v=${cacheBuster}`;
+      const url = `${apiBase}/api/subscribe?v=${cacheBuster}`;
 
       console.log('🔄 PushSaaS: Syncing subscription to:', url);
       const payload = {
